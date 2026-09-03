@@ -3,7 +3,8 @@
  *  ------------------------------------------------------------------------
  *  共通処理は dashboard-core.js（window.DashCore）に集約済み。
  *  このファイルは LINE 版だけの描画（KPI 2段8指標 / 属性・流入・行動の
- *  3ドメイン横棒グラフ / 折れ線）と、年齢計算などの固有ロジックのみを持つ。
+ *  3ドメイン横棒グラフ / 折れ線）と、年齢計算・愛着段判定などの
+ *  固有ロジックのみを持つ。
  *
  *  カラー: 属性=青 / 流入=緑 / エンゲージメント=紫 / その他=グレー
  * ========================================================================= */
@@ -20,7 +21,6 @@
   };
 
   /* ========================= 固有: 年齢計算 ========================= */
-  /* 生年月日から正確な年齢を計算（現在日基準・誕生日未到来を考慮）*/
   function calculateAge(birth) {
     if (!birth) return null;
     const bd = D.toDate(birth);
@@ -42,9 +42,34 @@
     return "60代〜";
   }
 
+  /* ========================= 固有: まちへの愛着 5段階判定 ==========
+   *  Q6（複数選択）を段0〜段4に振り分ける。
+   *  判定は「上から順」に評価（段4→段3→段2→段1→段0）。
+   *  Q6 完全未回答は "" を返し、集計から除外する（段0に混ぜない）。
+   * ================================================================ */
+  function sentimentTier(record) {
+    const M = CFG.sentimentTierMap;
+    const toks = new Set(D.tokens(record[F.sentiment], true)); // カンマ分割
+    if (toks.size === 0) return "";                            // 未回答 → 除外
+    const yes = (arr) => arr.some((t) => toks.has(t));         // 1つでも該当=はい
+    const q1  = yes(M.q1);
+    const q2a = yes(M.q2a);
+    const q2b = yes(M.q2b);
+    const q3a = yes(M.q3a);
+    const q3b = yes(M.q3b);
+    const q4a = yes(M.q4a);
+    const q4b = yes(M.q4b);
+    if (q4a || q4b) return "段4 一体層";
+    if (q3a || q3b) return "段3 定着層";
+    if (q2a && q2b) return "段2 選択層";
+    if (q1)         return "段1 気づき層";
+    return "段0 無関係層";
+  }
+
   /* ---- 仮想フィールド解決（コアの countBy から呼ばれる）---- */
   function resolveValue(record, field) {
-    if (field === "__ageBand") return ageBand(record[F.birth]);
+    if (field === "__ageBand")       return ageBand(record[F.birth]);
+    if (field === "__sentimentTier") return sentimentTier(record);
     return record[field];
   }
 
@@ -101,12 +126,12 @@
     D.drawLine(days, series, dynMax, "148,163,184"); // グレー
   }
 
-  /* ---- ドメイン別 横棒グラフ群（空データは No Data 表示）----
+  /* ---- ドメイン別 横棒グラフ群 ----
    *  グラフ定義(c)のプロパティで挙動を切り替える:
-   *    orderRef  : CFG 内の選択肢マスタ名（並び順を固定）
-   *    masterRef : CFG 内のマスタ名。0件の選択肢も表示（件数順は維持）
+   *    orderRef  : CFG 内の並び順配列名（軸を固定）
+   *    masterRef : CFG 内マスタ名。0件の選択肢も表示（件数順は維持）
+   *    fillZero  : 0件も表示（order 指定時は order の 0件も表示）
    *    limit     : null=全件 / 数値=件数上限 / 省略=上位N
-   *    fillZero  : 0件も表示
    * -------------------------------------------------------------------- */
   function renderCharts(rows, list, hostSel, palette, tag) {
     const host = D.$(hostSel);
@@ -115,14 +140,11 @@
     list.forEach((c, i) => {
       const canvasId = `${hostSel.slice(1)}_${c.key}`;
       const field = D.realField(c.field);
-      // 単一選択でも gender は複数値(カンマ)が入り得るので分割する
       const split = c.multi || c.key === "gender";
 
       const opts = { includeEmpty: false, splitComma: split };
-      // 並び順の固定（orderRef 優先、無ければ order）
       if (c.orderRef && CFG[c.orderRef]) opts.order = CFG[c.orderRef];
       if (c.order) opts.order = c.order;
-      // 0件補完: masterRef があれば「マスタ全件」を、無ければ「データ内の全選択肢」を使う
       if (c.fillZero) {
         opts.fillZero = true;
         if (!opts.order) {
@@ -139,7 +161,6 @@
         return;
       }
 
-      // サブラベル: 全件系は「全N項目」、通常は「上位N」
       const showAll = !!(opts.order || c.fillZero || c.limit === null);
       const sub = showAll ? `${tag} · 全${agg.labels.length}項目` : `${tag} · 上位${CFG.topN}`;
 
