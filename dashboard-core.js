@@ -40,7 +40,6 @@ window.DashCore = (function () {
 
   /* ========================= DOM / 汎用ヘルパー ========================= */
   const $ = (s) => document.querySelector(s);
-
   function setHTML(sel, html) {
     const el = $(sel);
     if (!el) { console.warn(`[dashboard] 要素が見つかりません: ${sel}`); return false; }
@@ -99,8 +98,15 @@ window.DashCore = (function () {
     return d && d >= startOf(from) && d <= endOf(to);
   }
 
-  /* 指定フィールドの値を集計して上位N件を返す。
-     仮想フィールドは resolveValue() 経由で解決される。*/
+  /* 指定フィールドの値を集計する。
+     opts:
+       splitComma        : 複数選択をカンマ分割するか（既定 true）
+       includeEmpty      : 空値を emptyLabel として集計に含めるか
+       order             : 選択肢マスタ（配列）。指定するとこの順でソート固定。
+       fillZero          : true かつ order/globalCategories 指定時、0件の選択肢も表示。
+       globalCategories  : 全期間に存在する選択肢の配列（0件補完に使用）。
+       limit             : 表示件数の上限。undefined=CFG.topN / null=無制限 / 数値=その件数。
+  */
   function countBy(rows, field, opts = {}) {
     const map = new Map();
     rows.forEach((r) => {
@@ -111,9 +117,46 @@ window.DashCore = (function () {
       }
       toks.forEach((t) => map.set(t, (map.get(t) || 0) + 1));
     });
-    let arr = [...map.entries()].sort((a, b) => b[1] - a[1]);
-    if (CFG.topN) arr = arr.slice(0, CFG.topN);
-    return { labels: arr.map((a) => a[0]), values: arr.map((a) => a[1]) };
+
+    let entries;
+
+    if (opts.order && opts.order.length) {
+      /* --- 選択肢マスタ順に固定（fillZero=true なら 0件も表示）--- */
+      const used = new Set(opts.order);
+      const ordered = opts.order
+        .filter((label) => opts.fillZero || map.has(label))
+        .map((label) => [label, map.get(label) || 0]);
+      // マスタに無い値は件数降順で末尾に追加（取りこぼし防止）
+      const extras = [...map.entries()]
+        .filter(([k]) => !used.has(k))
+        .sort((a, b) => b[1] - a[1]);
+      entries = ordered.concat(extras);
+    } else {
+      /* --- 件数降順 --- */
+      entries = [...map.entries()].sort((a, b) => b[1] - a[1]);
+      // 全期間には存在するが選択期間で0件の選択肢を 0 として補完
+      if (opts.fillZero && opts.globalCategories && opts.globalCategories.length) {
+        const present = new Set(map.keys());
+        opts.globalCategories.forEach((label) => {
+          if (!present.has(label)) entries.push([label, 0]);
+        });
+      }
+      // limit: undefined → CFG.topN、null → 無制限、数値 → その件数
+      const lim = opts.limit === undefined ? CFG.topN : opts.limit;
+      if (lim) entries = entries.slice(0, lim);
+    }
+
+    return { labels: entries.map((e) => e[0]), values: entries.map((e) => e[1]) };
+  }
+
+  /* 全レコード（state.RAW）に一度でも出現した選択肢の一覧を返す。
+     0件カテゴリの補完（fillZero）に使用する。*/
+  function globalCategoriesFor(field, splitComma) {
+    const set = new Set();
+    state.RAW.forEach((r) => {
+      tokens(resolveValue(r, field), splitComma).forEach((t) => set.add(t));
+    });
+    return [...set];
   }
 
   /* ========================= 日付ドメイン / スライダー ========================= */
@@ -134,7 +177,6 @@ window.DashCore = (function () {
     if (typeof noUiSlider === "undefined") { console.warn("[dashboard] noUiSlider が未ロードです（CDN到達を確認）"); return; }
     const minTs = state.dateDomain.min.getTime();
     const maxTs = state.dateDomain.max.getTime();
-
     state.slider = noUiSlider.create(el, {
       start: [minTs, maxTs],
       connect: true,
@@ -161,7 +203,6 @@ window.DashCore = (function () {
         if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
       });
     });
-
     const sections = [...items].map((i) => document.getElementById(i.dataset.target)).filter(Boolean);
     if (!sections.length) return;
     const io = new IntersectionObserver((entries) => {
@@ -206,7 +247,6 @@ window.DashCore = (function () {
     const grad = ctx.createLinearGradient(0, 0, 0, 300);
     grad.addColorStop(0, `rgba(${rgb},.28)`);
     grad.addColorStop(1, `rgba(${rgb},0)`);
-
     state.charts.line = new Chart(ctx, {
       type: "line",
       data: {
@@ -332,15 +372,12 @@ window.DashCore = (function () {
       const res = await fetch(CFG.DATA_SOURCE + "?_=" + Date.now());
       if (!res.ok) throw new Error("HTTP " + res.status);
       const json = await res.json();
-
       // データマートは配列 or { records: [...] } の双方に対応
       state.RAW = Array.isArray(json) ? json : (json.records || []);
       if (!state.RAW.length) throw new Error("records empty");
-
       buildDateDomain();
       buildSlider();
       applyRange(state.dateDomain.min, state.dateDomain.max);
-
       // 更新日 = JSON の生成日(generated_at)の「前日」。無ければ最新登録日。
       const genRaw = (!Array.isArray(json) && json.generated_at) ? json.generated_at : null;
       const genDate = toDate(genRaw);
@@ -390,7 +427,7 @@ window.DashCore = (function () {
     $, setHTML, setText, safe,
     toDate, dayKey, fmtDay, startOf, endOf, niceCeil, tokens, realField,
     // 集計
-    inRange, countBy, seriesForRange,
+    inRange, countBy, globalCategoriesFor, seriesForRange,
     // 描画
     drawBarH, drawLine, baseOpts, panelCanvas, panelEmpty, destroy,
     // 制御

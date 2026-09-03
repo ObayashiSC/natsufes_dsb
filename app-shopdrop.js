@@ -10,13 +10,11 @@
  * ========================================================================= */
 (function () {
   "use strict";
-
   const D = window.DashCore;
   const { CFG, F, C } = D;
 
   /* 折れ線グラフの選択セグメント（全体 / DROP / SHOP）*/
   let linePlat = "all";
-
   /* 折れ線セグメントごとの色（"r,g,b"）*/
   const PLAT_RGB = { DROP: "59,130,246", SHOP: "34,197,94", all: "148,163,184" };
 
@@ -92,13 +90,11 @@
   function renderTimeseries() {
     const filter = linePlat === "DROP" ? isDrop : linePlat === "SHOP" ? isShop : null;
     const { days, series } = D.seriesForRange(D.state.from, D.state.to, filter);
-
     const peak = Math.max(1, ...series);
     const sum  = series.reduce((a, b) => a + b, 0);
     const dynMax = D.niceCeil(Math.ceil(peak * CFG.timeseries.headroom));
     const segLabel = linePlat === "DROP" ? "DROP" : linePlat === "SHOP" ? "SHOP" : "全体";
     D.setText("#lineMeta", `［${segLabel}］合計 ${sum}名 / ピーク ${peak}名 / 上限 ${dynMax}（自動）`);
-
     D.drawLine(days, series, dynMax, PLAT_RGB[linePlat] || PLAT_RGB.all);
   }
 
@@ -107,31 +103,31 @@
     const host = D.$("#attrGrid");
     if (!host) { console.warn("[dashboard] #attrGrid が見つかりません"); return; }
     host.innerHTML = "";
-
     const segs = [
       { key: "all",  label: "全体", cls: "tier-all",  color: C.gray, match: () => true },
       { key: "drop", label: "DROP", cls: "tier-drop", color: C.attr, match: isDrop },
       { key: "shop", label: "SHOP", cls: "tier-shop", color: C.acq,  match: isShop },
     ];
     const charts = CFG.attributeCharts; // 性別 / 年代
-
     segs.forEach((seg) => {
       const sub = rows.filter(seg.match);
-
       // 各チャートの集計は 1 度だけ計算して DOM生成・描画で使い回す
-      const cells = charts.map((c) => ({
-        chart: c,
-        canvasId: `attr_${seg.key}_${c.key}`,
-        agg: D.countBy(sub, D.realField(c.field), { splitComma: !!c.multi }),
-      }));
-
+      const cells = charts.map((c) => {
+        const opts = { splitComma: !!c.multi };
+        if (c.orderRef && CFG[c.orderRef]) opts.order = CFG[c.orderRef];
+        if (c.order) opts.order = c.order;
+        return {
+          chart: c,
+          canvasId: `attr_${seg.key}_${c.key}`,
+          agg: D.countBy(sub, D.realField(c.field), opts),
+        };
+      });
       // 段ラベル（人数付き）
       host.insertAdjacentHTML("beforeend",
         `<div class="tier-label ${seg.cls}">
            <span class="tier-name">${seg.label}</span>
            <span class="tier-count">${sub.length.toLocaleString()}名</span>
          </div>`);
-
       // 段内に 性別 + 年代 を横並び（2カラム）
       const panels = cells.map((cell) =>
         cell.agg.labels.length
@@ -139,7 +135,6 @@
           : D.panelEmpty(cell.chart.title, seg.label)
       ).join("");
       host.insertAdjacentHTML("beforeend", `<div class="grid-2 ${seg.cls}">${panels}</div>`);
-
       // 描画（段の色で単色塗り）
       cells.forEach((cell) => {
         if (cell.agg.labels.length) D.drawBarH(cell.canvasId, cell.agg, [seg.color], 0);

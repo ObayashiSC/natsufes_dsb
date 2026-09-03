@@ -9,7 +9,6 @@
  * ========================================================================= */
 (function () {
   "use strict";
-
   const D = window.DashCore;
   const { CFG, F, C } = D;
 
@@ -67,21 +66,17 @@
     const answered = rows.filter((r) => D.tokens(r[F.gender]).length || D.tokens(r[F.area]).length).length;
     const richU    = rows.filter((r) => D.tokens(r[F.richmenu], true).length).length;
     const srcU     = rows.filter((r) => D.tokens(r[F.source], false).length).length;
-
     const byMonth = {};
     rows.forEach((r) => { const m = (r[F.addedAt] || "").slice(0, 7); if (m) byMonth[m] = (byMonth[m] || 0) + 1; });
     const months = Object.keys(byMonth).sort();
     const lastMonth = months.length ? byMonth[months[months.length - 1]] : 0;
-
     const ages = rows.map((r) => calculateAge(r[F.birth])).filter((a) => a !== null);
     const avgAge = ages.length ? Math.round(ages.reduce((a, b) => a + b, 0) / ages.length) : 0;
-
     const pct = (n) => (total ? Math.round((n / total) * 100) : 0);
     const vals = {
       total, activeRate: pct(active), blockRate: pct(blocked), answerRate: pct(answered),
       lastMonth, richUsers: richU, srcUsers: srcU, avgAge,
     };
-
     const html = CFG.kpis.map((k) => {
       const accent = k.accent || "";
       const v = vals[k.key] ?? 0;
@@ -106,7 +101,12 @@
     D.drawLine(days, series, dynMax, "148,163,184"); // グレー
   }
 
-  /* ---- ドメイン別 横棒グラフ群（空データは No Data 表示）---- */
+  /* ---- ドメイン別 横棒グラフ群（空データは No Data 表示）----
+   *  グラフ定義(c)のプロパティで挙動を切り替える:
+   *    orderRef : CFG 内の選択肢マスタ名（並び順固定）
+   *    limit    : null=全件 / 数値=件数上限 / 省略=上位N
+   *    fillZero : 0件も表示
+   * -------------------------------------------------------------------- */
   function renderCharts(rows, list, hostSel, palette, tag) {
     const host = D.$(hostSel);
     if (!host) { console.warn(`[dashboard] ${hostSel} が見つかりません`); return; }
@@ -116,13 +116,27 @@
       const field = D.realField(c.field);
       // 単一選択でも gender は複数値(カンマ)が入り得るので分割する
       const split = c.multi || c.key === "gender";
-      const agg = D.countBy(rows, field, { includeEmpty: false, splitComma: split });
 
+      const opts = { includeEmpty: false, splitComma: split };
+      if (c.orderRef && CFG[c.orderRef]) opts.order = CFG[c.orderRef];
+      if (c.order) opts.order = c.order;
+      if (c.fillZero) {
+        opts.fillZero = true;
+        if (!opts.order) opts.globalCategories = D.globalCategoriesFor(field, split);
+      }
+      if (c.limit !== undefined) opts.limit = c.limit;
+
+      const agg = D.countBy(rows, field, opts);
       if (!agg.labels.length) {
         host.insertAdjacentHTML("beforeend", D.panelEmpty(c.title, tag));
         return;
       }
-      host.insertAdjacentHTML("beforeend", D.panelCanvas(c.title, canvasId, `${tag} · 上位${CFG.topN}`, agg.labels.length));
+
+      // サブラベル: 全件系は「全N項目」、通常は「上位N」
+      const showAll = !!(opts.order || c.fillZero || c.limit === null);
+      const sub = showAll ? `${tag} · 全${agg.labels.length}項目` : `${tag} · 上位${CFG.topN}`;
+
+      host.insertAdjacentHTML("beforeend", D.panelCanvas(c.title, canvasId, sub, agg.labels.length));
       D.drawBarH(canvasId, agg, palette, i);
     });
   }
@@ -131,8 +145,8 @@
   function updateMeta(rows) {
     const richTotal = rows.reduce((s, r) => s + D.tokens(r[F.richmenu], true).length, 0);
     D.setText("#richMeta", `のべ ${richTotal} クリック`);
-    D.setText("#attrMeta", `対象 ${rows.length}名 · 上位${CFG.topN}`);
-    D.setText("#acqMeta",  `対象 ${rows.length}名 · 上位${CFG.topN}`);
+    D.setText("#attrMeta", `対象 ${rows.length}名`);
+    D.setText("#acqMeta",  `対象 ${rows.length}名`);
   }
 
   /* ========================= 起動 ========================= */

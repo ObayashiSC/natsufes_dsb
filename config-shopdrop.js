@@ -5,7 +5,6 @@
  *  カラー方針: DROP=青系 / SHOP=緑系 / それ以外(全体等)=グレー系
  * ========================================================================= */
 window.DASHBOARD_CONFIG = {
-
   /* --- データソース (日々差し替えるJSON) --------------------------------- */
   DATA_SOURCE: "shopdrop_datamart.json",
 
@@ -27,6 +26,9 @@ window.DASHBOARD_CONFIG = {
     dropId:   "drop_account_id",    // DROP 登録ID（プラットフォーム判定）
   },
 
+  /* --- 年代の並び順（20代→30代…の年代順で固定）------------------------- */
+  ageOrder: ["10代", "20代", "30代", "40代", "50代", "60代", "70代"],
+
   /* --- KPIタイル（3指標のみ）------------------------------------------- *
    * カラー: total=グレー / DROP=青(attr) / SHOP=緑(acq)                   */
   kpis: [
@@ -41,10 +43,12 @@ window.DASHBOARD_CONFIG = {
     cumulative: false,
   },
 
-  /* --- ユーザー属性（性別・年代のみ / 全体・DROP・SHOP 3段で表示）------ */
+  /* --- ユーザー属性（性別・年代のみ / 全体・DROP・SHOP 3段で表示）------
+   *  年代は ageOrder の順で固定（20代→30代…）
+   * -------------------------------------------------------------------- */
   attributeCharts: [
     { key: "gender",  title: "性別", field: "gender",     multi: true  },
-    { key: "ageBand", title: "年代", field: "__ageGroup", multi: false },
+    { key: "ageBand", title: "年代", field: "__ageGroup", multi: false, orderRef: "ageOrder" },
   ],
 
   /* --- 棒グラフ表示上限（上位N件・横棒）--------------------------------- */
