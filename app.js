@@ -103,9 +103,10 @@
 
   /* ---- ドメイン別 横棒グラフ群（空データは No Data 表示）----
    *  グラフ定義(c)のプロパティで挙動を切り替える:
-   *    orderRef : CFG 内の選択肢マスタ名（並び順固定）
-   *    limit    : null=全件 / 数値=件数上限 / 省略=上位N
-   *    fillZero : 0件も表示
+   *    orderRef  : CFG 内の選択肢マスタ名（並び順を固定）
+   *    masterRef : CFG 内のマスタ名。0件の選択肢も表示（件数順は維持）
+   *    limit     : null=全件 / 数値=件数上限 / 省略=上位N
+   *    fillZero  : 0件も表示
    * -------------------------------------------------------------------- */
   function renderCharts(rows, list, hostSel, palette, tag) {
     const host = D.$(hostSel);
@@ -118,11 +119,17 @@
       const split = c.multi || c.key === "gender";
 
       const opts = { includeEmpty: false, splitComma: split };
+      // 並び順の固定（orderRef 優先、無ければ order）
       if (c.orderRef && CFG[c.orderRef]) opts.order = CFG[c.orderRef];
       if (c.order) opts.order = c.order;
+      // 0件補完: masterRef があれば「マスタ全件」を、無ければ「データ内の全選択肢」を使う
       if (c.fillZero) {
         opts.fillZero = true;
-        if (!opts.order) opts.globalCategories = D.globalCategoriesFor(field, split);
+        if (!opts.order) {
+          opts.globalCategories = (c.masterRef && CFG[c.masterRef])
+            ? CFG[c.masterRef]
+            : D.globalCategoriesFor(field, split);
+        }
       }
       if (c.limit !== undefined) opts.limit = c.limit;
 
