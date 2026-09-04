@@ -251,6 +251,8 @@ window.GEO = (function () {
     });
   }
   function initFilters() {
+    // フィルタUIが無い構成（属性直後に埋め込み等）ではスキップ
+    if (!document.getElementById("geo_f_gender")) return;
     buildChips("#geo_f_gender", distinct((r) => r[FLD.gender], ORDER.gender), STATE.gender);
     buildChips("#geo_f_age", distinct((r) => ageBand(r[FLD.birth]), ORDER.age), STATE.age);
     buildChips("#geo_f_res", distinct(resGroupOf, ORDER.resGroup), STATE.res);
