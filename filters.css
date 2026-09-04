@@ -83,3 +83,8 @@
   .gfilter-bar { position: static; box-shadow: none; }  /* 狭幅では固定解除（縦に長いため）*/
   .gfilter-bar .gf-grid { grid-template-columns: 1fr; }
 }
+
+/* ===== アンカー移動時のスクロール停止位置を固定バー分だけ下げる ===== */
+:root { --gf-bar-h: 200px; }   /* 固定バーのおおよその高さ（フォールバック）*/
+html { scroll-padding-top: calc(var(--gf-bar-h) + 16px); }
+.section-label { scroll-margin-top: calc(var(--gf-bar-h) + 16px); }
