@@ -127,17 +127,10 @@
         </div>
         <section class="grid-2 dom-attr" id="attrGrid"></section>
 
-        <!-- ===== 追加: 居住地・勤務地 属性セクション（属性の直後）===== -->
-        <div class="section-label dom-attr" id="geoSection">
-          <div>
-            <h2>居住地・勤務地</h2>
-            <p>回答者の居住地・勤務地の分布</p>
-          </div>
-          <span class="meta" id="geoCount">–</span>
-        </div>
-
+        <!-- ===== 追加: 居住地・勤務地 属性セクション（属性の直後・見出しなし）===== -->
+        <span id="geoCount" style="display:none">–</span>
         <!-- 5パネル（居住サマリ/詳細・徒歩圏・勤務サマリ/詳細）-->
-        <section class="geo-grid dom-attr">
+        <section class="geo-grid dom-attr" id="geoSection">
           <div class="panel geo-a-resSum">
             <div class="panel-head"><h3>居住地・サマリ</h3><span class="sub" id="geo_s_resSum">–</span></div>
             <div class="geo-box small"><canvas id="geo_resSum"></canvas></div>
