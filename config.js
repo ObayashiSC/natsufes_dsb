@@ -135,7 +135,7 @@ window.DASHBOARD_CONFIG = {
    *  所属ビル : 全件・0件も表示（buildingMaster で 0件補完）
    * -------------------------------------------------------------------- */
   attributeCharts: [
-    { key: "gender",   title: "性別",       field: "gender",    multi: true },
+    { key: "gender",   title: "性別",       field: "gender",    multi: true, limit: null },
     { key: "ageBand",  title: "年代",       field: "__ageBand", multi: false, orderRef: "ageOrder" },
     { key: "area",     title: "居住エリア", field: "area",      multi: false, limit: null, fillZero: true, masterRef: "areaMaster" },
     { key: "building", title: "所属ビル",   field: "building",  multi: false, limit: null, fillZero: true, masterRef: "buildingMaster" },
@@ -153,7 +153,7 @@ window.DASHBOARD_CONFIG = {
    *  まちへの愛着(Q6): 選択肢順（sentimentOrder）で並べる・全件
    * -------------------------------------------------------------------- */
   engagementCharts: [
-    { key: "richmenu",  title: "リッチメニュー クリック",  field: "richmenu",  multi: true },
+    { key: "richmenu",  title: "リッチメニュー クリック",  field: "richmenu",  multi: true, limit: null },
     { key: "sentiment", title: "まちへの愛着（Q6・複数回答）", field: "sentiment", multi: true, orderRef: "sentimentOrder", limit: null },
   ],
 
