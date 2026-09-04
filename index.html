@@ -128,7 +128,7 @@
         <div class="section-label dom-acq" id="acquisition" style="flex-wrap:wrap">
           <!-- 左: 流入経路の大見出し（左チャートの上）-->
           <div style="flex:1 1 48%; min-width:0">
-            <h2>流入経路（みんまちLINE公式アカウントへの流入経路） <span class="note">※ ユーザー属性とは別軸</span></h2>
+            <h2>流入経路（みんまちLINE公式アカウントへの流入経路）</h2>
             <p>ユーザーが「どこから来たか」を示す獲得チャネル指標</p>
           </div>
           <!-- 右: 認知経路の大見出し（右チャートの上）※同じ h2 フォント -->
@@ -140,12 +140,16 @@
         <section class="grid-2 dom-acq" id="acqGrid"></section>
 
         <!-- ===== Domain 3: Engagement / Rich menu (紫) ===== -->
-        <div class="section-label dom-rich" id="engagement">
-          <div>
-            <h2>エンゲージメント <span class="note">※ 属性・流入経路とは別軸</span></h2>
+        <div class="section-label dom-rich" id="engagement" style="flex-wrap:wrap">
+          <!-- 左: エンゲージメント大見出し（左チャートの上）-->
+          <div style="flex:1 1 48%; min-width:0">
+            <h2>エンゲージメント</h2>
             <p>ユーザーが「何を押したか / まちにどれだけ愛着があるか」を示す行動指標</p>
           </div>
-          <span class="meta" id="richMeta">–</span>
+          <!-- 右: 「のべ〜クリック」を まちへの愛着グラフの上に配置 -->
+          <div style="flex:1 1 48%; min-width:0; display:flex; align-items:baseline">
+            <span class="meta" id="richMeta" style="margin-left:0">–</span>
+          </div>
         </div>
         <section class="grid-2 dom-rich" id="engGrid"></section>
 
