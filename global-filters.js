@@ -146,9 +146,17 @@ window.GFilter = (function () {
         '<span class="gf-count" id="gfCount">全件表示</span>' +
         '<button type="button" class="gf-clear" id="gfClear">クリア</button>' +
       '</div>' +
+      '<div class="gf-period" id="gfPeriod"></div>' +  /* ← 既存の期間フィルターをここへ移動 */
       '<div class="gf-grid">' + groups + '</div>' +
       '<div class="gf-selected" id="gfSelected">選択中のフィルタはありません（全件表示）。</div>';
     anchor.parentNode.insertBefore(bar, anchor.nextSibling);
+    // 既存の期間フィルター（.slider-panel）を、この固定バーの先頭へ物理移動する。
+    // ノードごと動かすため noUiSlider の実体や dashboard-core.js のイベントはそのまま生きる。
+    var period = document.getElementById("gfPeriod");
+    if (period && anchor && anchor.parentNode !== period) {
+      anchor.classList.add("gf-period-panel");
+      period.appendChild(anchor);
+    }
     var clr = document.getElementById("gfClear");
     if (clr) clr.onclick = clearAll;
     return true;

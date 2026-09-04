@@ -31,6 +31,17 @@
 }
 .gfilter-bar .gf-clear:hover { background: var(--bg); color: var(--text); }
 
+/* ---- 期間フィルター（.slider-panel をここへ移動）---- */
+.gfilter-bar .gf-period { margin-bottom: 12px; }
+.gfilter-bar .gf-period-panel {
+  margin: 0;                     /* 元の下マージンを打ち消す */
+  padding: 0 0 12px;
+  background: transparent;       /* 二重パネルに見えないように */
+  border-top: none;
+  box-shadow: none;
+  border-bottom: 1px dashed var(--stroke);  /* カテゴリ群との区切り線 */
+}
+
 /* ---- 4カテゴリのグリッド ---- */
 .gfilter-bar .gf-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
 .gfilter-bar .gf-group { min-width: 0; }
