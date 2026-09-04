@@ -59,13 +59,13 @@
 .geo-a-wrkSum   { grid-area: wrkSum; }
 .geo-a-wrkDetail{ grid-area: wrkDetail; }
 
-/* パネル上辺は属性カラー（青）*/
-.geo-grid .panel { border-top: 2px solid var(--attr-line); }
+/* パネル上辺は属性カラー（青）。縦フレックスでグラフ領域を伸縮させる */
+.geo-grid .panel { border-top: 2px solid var(--attr-line); display: flex; flex-direction: column; }
 
-/* チャート領域の高さ（詳細は縦長）*/
-.geo-box { position: relative; height: 210px; }
-.geo-box.tall { height: 470px; }
-.geo-box.small { height: 170px; }
+/* チャート領域: パネルの余白を埋めるよう縦方向に伸縮（min-height で下限確保）*/
+.geo-box { position: relative; flex: 1 1 auto; min-height: 210px; }
+.geo-box.tall { min-height: 470px; }
+.geo-box.small { min-height: 170px; }
 
 /* ---- レスポンシブ ---- */
 @media (max-width: 1080px) {
@@ -74,7 +74,7 @@
     grid-template-columns: 1fr;
     grid-template-areas: "resSum" "resDetail" "walk" "wrkSum" "wrkDetail";
   }
-  .geo-box.tall { height: 420px; }
+  .geo-box.tall { min-height: 420px; }
 }
 @media (max-width: 560px) {
   .geo-fgrid { grid-template-columns: 1fr; }
