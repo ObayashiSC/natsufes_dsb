@@ -137,8 +137,6 @@ window.DASHBOARD_CONFIG = {
   attributeCharts: [
     { key: "gender",   title: "性別",       field: "gender",    multi: true, limit: null },
     { key: "ageBand",  title: "年代",       field: "__ageBand", multi: false, orderRef: "ageOrder" },
-    { key: "area",     title: "居住エリア", field: "area",      multi: false, limit: null, fillZero: true, masterRef: "areaMaster" },
-    { key: "building", title: "所属ビル",   field: "building",  multi: false, limit: null, fillZero: true, masterRef: "buildingMaster" },
   ],
 
   /* --- ドメイン② 流入経路（緑）※属性とは別軸 ---------------------------
