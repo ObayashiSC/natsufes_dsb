@@ -19,7 +19,6 @@
   font-size: 12px; padding: 6px 12px; cursor: pointer; border-radius: 0; font-family: var(--font);
 }
 .geo-clear:hover { background: var(--bg); color: var(--text); }
-
 .geo-fgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
 .geo-fgroup { min-width: 0; }
 .geo-flabel { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 8px; display: flex; gap: 6px; align-items: center; }
@@ -34,7 +33,6 @@
 }
 .geo-chip:hover { border-color: var(--attr); color: var(--text); }
 .geo-chip.on { background: var(--attr); border-color: var(--attr); color: #fff; font-weight: 600; }
-
 .geo-selected {
   margin-top: 12px; font-size: 12px; color: var(--muted); line-height: 1.8;
   border-top: 1px dashed var(--stroke); padding-top: 10px;
@@ -52,6 +50,7 @@
  */
 .geo-grid {
   display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap);
+  margin-top: var(--gap);                    /* 性別・年代グリッド(#attrGrid)との間隔を、内部の行間(=var(--gap))と同じに揃える */
   grid-auto-rows: 1fr;                       /* 各行を等しい高さに */
   grid-template-areas:
     "resSum   resDetail"
@@ -63,10 +62,8 @@
 .geo-a-walk     { grid-area: walk; }
 .geo-a-wrkSum   { grid-area: wrkSum; }
 .geo-a-wrkDetail{ grid-area: wrkDetail; }
-
 /* パネル上辺は属性カラー（青）。縦フレックスでグラフ領域を伸縮させる */
 .geo-grid .panel { border-top: 2px solid var(--attr-line); display: flex; flex-direction: column; }
-
 /* チャート領域: 全ボックス均一高さ（横軸ラベルが多い詳細も収まる高さに）*/
 .geo-box,
 .geo-box.tall,
