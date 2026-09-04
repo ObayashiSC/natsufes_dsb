@@ -45,12 +45,17 @@
   border-radius: 999px; padding: 1px 9px; margin: 2px 4px 2px 0; font-size: 11px;
 }
 
-/* ---- パネルグリッド（キャプチャ準拠の配置）---- */
+/* ---- パネルグリッド（キャプチャ準拠：全ボックス均一・詳細はスパンしない）----
+ *   resSum | resDetail
+ *   walk   | （空白）
+ *   wrkSum | wrkDetail
+ */
 .geo-grid {
   display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap);
+  grid-auto-rows: 1fr;                       /* 各行を等しい高さに */
   grid-template-areas:
     "resSum   resDetail"
-    "walk     resDetail"
+    "walk     .        "
     "wrkSum   wrkDetail";
 }
 .geo-a-resSum   { grid-area: resSum; }
@@ -62,19 +67,22 @@
 /* パネル上辺は属性カラー（青）。縦フレックスでグラフ領域を伸縮させる */
 .geo-grid .panel { border-top: 2px solid var(--attr-line); display: flex; flex-direction: column; }
 
-/* チャート領域: パネルの余白を埋めるよう縦方向に伸縮（min-height で下限確保）*/
-.geo-box { position: relative; flex: 1 1 auto; min-height: 210px; }
-.geo-box.tall { min-height: 470px; }
-.geo-box.small { min-height: 170px; }
+/* チャート領域: 全ボックス均一高さ（横軸ラベルが多い詳細も収まる高さに）*/
+.geo-box,
+.geo-box.tall,
+.geo-box.small { position: relative; flex: 1 1 auto; min-height: 300px; }
 
 /* ---- レスポンシブ ---- */
 @media (max-width: 1080px) {
   .geo-fgrid { grid-template-columns: 1fr 1fr; }
   .geo-grid {
     grid-template-columns: 1fr;
+    grid-auto-rows: auto;
     grid-template-areas: "resSum" "resDetail" "walk" "wrkSum" "wrkDetail";
   }
-  .geo-box.tall { min-height: 420px; }
+  .geo-box,
+  .geo-box.tall,
+  .geo-box.small { min-height: 260px; }
 }
 @media (max-width: 560px) {
   .geo-fgrid { grid-template-columns: 1fr; }
