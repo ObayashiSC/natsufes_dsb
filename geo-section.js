@@ -13,6 +13,9 @@
  *   - フィルタ（性別 / 年代 / 居住地グループ / 勤務地グループ）複数選択・選択状態表示
  *   - 期間スライダー（既存）にも連動（DashCore.state.slider を購読）
  *
+ *  ★追加: window.GFilter（グローバルフィルター）に対応。存在する場合は
+ *    このセクションも GFilter で絞り込み、変更時に自動再描画する。
+ *
  *  ※ line_datamart.json にグループ列が無くても、下記マッピングで解決する。
  *    グループ列（Q3_単一選択_グループ / Q4_単一選択_グループ）があればそれを優先。
  * ======================================================================= */
@@ -122,6 +125,7 @@ window.GEO = (function () {
     if (age < 60) return "50代";
     return "60代〜";
   }
+
   function resGroupOf(r) {
     return (r[FLD.resG] && String(r[FLD.resG]).trim())
         || RES_GROUP_MAP[r[FLD.res]] || "";
@@ -136,7 +140,7 @@ window.GEO = (function () {
     return (v.indexOf("徒歩圏") >= 0 && v.indexOf("徒歩圏外") < 0) ? "徒歩圏" : "徒歩圏外";
   }
 
-  /* ===================== 状態 ===================== */
+  /* ===================== 状態（ローカルUIは未使用時のフォールバック）===================== */
   const STATE = { gender: new Set(), age: new Set(), res: new Set(), wrk: new Set() };
 
   function baseRows() {
@@ -152,6 +156,11 @@ window.GEO = (function () {
       if (STATE.wrk.size && !STATE.wrk.has(wrkGroupOf(r))) return false;
       return true;
     });
+  }
+  /* ★グローバルフィルター優先: window.GFilter があればそれを使う */
+  function filteredRows() {
+    const base = baseRows();
+    return (window.GFilter && window.GFilter.filter) ? window.GFilter.filter(base) : applyFilters(base);
   }
 
   /* ===================== 集計ヘルパ ===================== */
@@ -187,7 +196,7 @@ window.GEO = (function () {
   function setSub(sel, n) { const el = $(sel); if (el) el.textContent = `対象 ${n} 名`; }
 
   function render() {
-    const rows = applyFilters(baseRows());
+    const rows = filteredRows();           // ★グローバルフィルター適用後
     const cnt = $("#geoCount");
     if (cnt) cnt.textContent = `該当 ${rows.length} / ${(D.state.RAW || []).length} 名`;
 
@@ -210,7 +219,7 @@ window.GEO = (function () {
     renderSelected();
   }
 
-  /* ---- 選択中サマリ & バッジ ---- */
+  /* ---- 選択中サマリ & バッジ（ローカルUIがある場合のみ）---- */
   function renderSelected() {
     const parts = [];
     const add = (label, set) => {
@@ -229,7 +238,7 @@ window.GEO = (function () {
     badge("#geo_b_res", STATE.res); badge("#geo_b_wrk", STATE.wrk);
   }
 
-  /* ===================== フィルタUI ===================== */
+  /* ===================== フィルタUI（ローカル・後方互換）===================== */
   function distinct(fn, order) {
     const present = new Set((D.state.RAW || []).map(fn).filter(Boolean));
     const out = order.filter((v) => present.has(v));
@@ -277,6 +286,10 @@ window.GEO = (function () {
         // 期間スライダーに連動（確定時に再描画）
         if (D.state.slider && D.state.slider.on) {
           try { D.state.slider.on("change", () => D.safe("居住勤務", render)); } catch (e) {}
+        }
+        // ★グローバルフィルターに連動（変更時に再描画）
+        if (window.GFilter && window.GFilter.subscribe) {
+          window.GFilter.subscribe(() => D.safe("居住勤務", render));
         }
         D.safe("居住勤務", render);
       } else if (tries > 80) {

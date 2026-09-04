@@ -17,6 +17,8 @@
   <link rel="stylesheet" href="styles.css">
   <!-- 追加: 居住地・勤務地セクション用スタイル -->
   <link rel="stylesheet" href="geo-section.css">
+  <!-- 追加: グローバルフィルター（スクロール追従）用スタイル -->
+  <link rel="stylesheet" href="filters.css">
   <script src="config.js"></script>
 </head>
 <body class="page-fade">
@@ -43,6 +45,7 @@
         <div class="nav-item" data-target="attributes"><span class="ic attr">◔</span> Attribute（属性）</div>
         <div class="nav-item" data-target="acquisition"><span class="ic acq">◕</span> Acquisition（流入）</div>
         <div class="nav-item" data-target="engagement"><span class="ic rich">◱</span> Engagement（行動）</div>
+        <div class="nav-item" data-target="geoSection"><span class="ic attr">◧</span> 居住地・勤務地</div>
       </nav>
       <div class="side-foot">
         <span class="dot">●</span> Data source<br>
@@ -50,7 +53,6 @@
         <span style="opacity:.7">records: <span id="recCount">–</span></span>
       </div>
     </aside>
-
     <!-- ===================== Main ===================== -->
     <main class="main">
       <!-- Overview アンカー -->
@@ -65,21 +67,17 @@
           Live datamart · updated <b id="genAt" style="margin-left:4px">–</b>
         </div>
       </div>
-
       <!-- モバイル用 ダッシュボード切替 -->
       <div class="switch-mobile">
         <a class="chip chip-active" href="index.html">LINE Growth Tracker</a>
         <a class="chip" href="shopdrop.html" data-nav>ShopDrop Tracker</a>
       </div>
-
       <!-- KPI 2段 × 4 = 8指標 -->
       <section class="kpis" id="kpisRow1"></section>
-
       <!-- 注釈: タイルとグラフ合計値の不一致について -->
       <p style="margin:2px 2px 18px;padding:10px 14px;font-size:12px;line-height:1.65;color:var(--muted);background:var(--panel);border-left:3px solid var(--gray)">
         ※ アンケート設定前のユーザーについて一部回答が得られていない関係で、グラフの合計値とトップのタイルが合わない場合があります。
       </p>
-
       <!-- Date slider (全体連動) -->
       <section class="panel slider-panel">
         <div class="s-title"><span class="ic">🗓</span> 期間フィルター</div>
@@ -88,7 +86,8 @@
           <b id="readoutFrom">–</b> &nbsp;→&nbsp; <b id="readoutTo">–</b>
         </div>
       </section>
-
+      <!-- 追加: グローバルフィルターバーは global-filters.js が
+           この直後（.slider-panel の下）に自動挿入します（sticky で上部固定）。 -->
       <div id="content">
         <!-- 折れ線 + ドメイン凡例 -->
         <section class="grid-line">
@@ -115,7 +114,6 @@
             </div>
           </div>
         </section>
-
         <!-- ===== Domain 1: Attribute (青) ===== -->
         <div class="section-label dom-attr" id="attributes">
           <div>
@@ -125,7 +123,6 @@
           <span class="meta" id="attrMeta">–</span>
         </div>
         <section class="grid-2 dom-attr" id="attrGrid"></section>
-
         <!-- ===== 追加: 居住地・勤務地 属性セクション（属性の直後・見出しなし）===== -->
         <span id="geoCount" style="display:none">–</span>
         <!-- 5パネル（居住サマリ/詳細・徒歩圏・勤務サマリ/詳細）-->
@@ -151,7 +148,6 @@
             <div class="geo-box tall"><canvas id="geo_wrkDetail"></canvas></div>
           </div>
         </section>
-
         <!-- ===== Domain 2: Acquisition (緑) ===== -->
         <div class="section-label dom-acq" id="acquisition" style="flex-wrap:wrap">
           <!-- 左: 流入経路の大見出し（左チャートの上）-->
@@ -166,7 +162,6 @@
           </div>
         </div>
         <section class="grid-2 dom-acq" id="acqGrid"></section>
-
         <!-- ===== Domain 3: Engagement / Rich menu (紫) ===== -->
         <!-- 下の grid-2 と同じ列構成にして、richMeta を左チャートの右端に揃える -->
         <div class="section-label dom-rich" id="engagement" style="display:grid; grid-template-columns:1fr 1fr; gap:var(--gap); align-items:start">
@@ -182,14 +177,12 @@
           <div></div>
         </div>
         <section class="grid-2 dom-rich" id="engGrid"></section>
-
         <div class="footer-note">
           データは <code>line_datamart.json</code> を参照して自動描画されます（日次差し替え対応）
         </div>
       </div>
     </main>
   </div>
-
   <!-- ページ遷移フェード（違和感のない切替）-->
   <script>
     (function () {
@@ -205,6 +198,8 @@
     })();
   </script>
   <script src="dashboard-core.js"></script>
+  <!-- 追加: グローバルフィルター（app.js より前に読み込み、window.GFilter を定義）-->
+  <script src="global-filters.js"></script>
   <script src="app.js"></script>
   <!-- 追加: 居住地・勤務地セクション（自己完結・既存を変更しない） -->
   <script src="geo-section.js"></script>

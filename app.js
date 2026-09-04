@@ -6,6 +6,11 @@
  *  3ドメイン横棒グラフ / 折れ線）と、年齢計算などの固有ロジックのみを持つ。
  *
  *  カラー: 属性=青 / 流入=緑 / エンゲージメント=紫 / その他=グレー
+ *
+ *  ★追加: window.GFilter（グローバルフィルター）に対応。
+ *    render() 内で期間フィルター後の rows に GFilter を適用し、KPI／折れ線／
+ *    属性・流入・行動のすべてを絞り込む。フィルター変更時は
+ *    'globalfilters:change' を購読して再描画する。
  * ========================================================================= */
 (function () {
   "use strict";
@@ -32,6 +37,7 @@
     if (age <= 0 || age > 120) return null;
     return age;
   }
+
   function ageBand(birth) {
     const age = calculateAge(birth);
     if (age === null) return "";
@@ -49,14 +55,25 @@
     return record[field];
   }
 
+  /* ========================= グローバルフィルター ========================= */
+  /* 期間フィルター後の rows（直近の render 引数）を保持し、フィルター変更時に再描画する */
+  let lastRows = [];
+  function applyGlobal(rows) {
+    return (window.GFilter && window.GFilter.filter) ? window.GFilter.filter(rows) : rows;
+  }
+
   /* ========================= ページ描画 ========================= */
   function render(rows) {
-    D.safe("KPI",       () => renderKPIs(rows));
-    D.safe("折れ線",     () => renderTimeseries());
-    D.safe("属性チャート", () => renderCharts(rows, CFG.attributeCharts,   "#attrGrid", PALETTE.attr, "属性"));
-    D.safe("流入チャート", () => renderCharts(rows, CFG.acquisitionCharts, "#acqGrid",  PALETTE.acq,  "流入"));
-    D.safe("行動チャート", () => renderCharts(rows, CFG.engagementCharts,  "#engGrid",  PALETTE.rich, "行動"));
-    D.safe("メタ更新",    () => updateMeta(rows));
+    lastRows = rows;                 // 期間フィルター後（グローバル適用前）の行を保持
+    const view = applyGlobal(rows);  // グローバルフィルター適用後の行
+    D.safe("KPI",       () => renderKPIs(view));
+    D.safe("折れ線",     () => renderTimeseries(view));
+    D.safe("属性チャート", () => renderCharts(view, CFG.attributeCharts,   "#attrGrid", PALETTE.attr, "属性"));
+    D.safe("流入チャート", () => renderCharts(view, CFG.acquisitionCharts, "#acqGrid",  PALETTE.acq,  "流入"));
+    D.safe("行動チャート", () => renderCharts(view, CFG.engagementCharts,  "#engGrid",  PALETTE.rich, "行動"));
+    D.safe("メタ更新",    () => updateMeta(view));
+    // フィルターバーのカウンタへ実際の該当件数を反映
+    if (window.GFilter && window.GFilter.report) window.GFilter.report(view.length, rows.length);
   }
 
   /* ---- KPI (2段8指標) ---- */
@@ -97,13 +114,40 @@
     D.setHTML("#kpisRow2", html.slice(4).join(""));
   }
 
-  /* ---- 折れ線: 日毎の登録者数（Y軸上限 動的）---- */
-  function renderTimeseries() {
-    const { days, series } = D.seriesForRange(D.state.from, D.state.to);
+  /* ---- 折れ線: 日毎の登録者数（Y軸上限 動的）----
+   *  期間の日付軸(days)は既存の seriesForRange から取得しつつ、
+   *  系列(series)は「グローバルフィルター適用後の rows」から日毎に再集計する。
+   *  これにより折れ線もフィルターに追従する。
+   * -------------------------------------------------------------------- */
+  function renderTimeseries(rows) {
+    const base = D.seriesForRange(D.state.from, D.state.to);
+    const days = base.days || [];
+    const sample = days[0] || "";
+    const idx = Object.create(null);
+    days.forEach((d, i) => { idx[d] = i; });
+    const series = days.map(() => 0);
+    rows.forEach((r) => {
+      const lab = tsLabel(r[F.addedAt], sample);
+      if (lab != null && lab in idx) series[idx[lab]]++;
+    });
     const peak = Math.max(1, ...series);
     const dynMax = D.niceCeil(Math.ceil(peak * CFG.timeseries.headroom));
     D.setText("#lineMeta", `ピーク ${peak}名 / 上限 ${dynMax}（自動）`);
     D.drawLine(days, series, dynMax, "148,163,184"); // グレー
+  }
+
+  /* friend_added_at → days のラベル書式に合わせて変換（"07/28" 形式を自動判定）*/
+  function tsLabel(dt, sample) {
+    if (!dt) return null;
+    const s = String(dt).slice(0, 10).replace(/\//g, "-");
+    const d = new Date(s);
+    if (isNaN(d)) return null;
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    const yy = d.getFullYear();
+    if (/^\d{4}/.test(sample)) return sample.indexOf("/") >= 0 ? `${yy}/${mm}/${dd}` : `${yy}-${mm}-${dd}`;
+    const sep = sample.indexOf("-") >= 0 ? "-" : "/";
+    return `${mm}${sep}${dd}`;
   }
 
   /* ---- ドメイン別 横棒グラフ群（空データは No Data 表示）----
@@ -121,7 +165,6 @@
     list.forEach((c, i) => {
       const canvasId = `${hostSel.slice(1)}_${c.key}`;
       const field = D.realField(c.field);
-
       // 単一選択でも gender は複数値(カンマ)が入り得るので分割する
       const split = c.multi || c.key === "gender";
       const opts = { includeEmpty: false, splitComma: split };
@@ -162,6 +205,11 @@
     D.setText("#attrMeta", `対象 ${rows.length}名`);
     D.setText("#acqMeta",  `対象 ${rows.length}名`);
   }
+
+  /* ---- グローバルフィルター変更時の再描画（期間フィルター後の行を再適用）---- */
+  window.addEventListener("globalfilters:change", function () {
+    D.safe("再描画(グローバルフィルター)", () => render(lastRows));
+  });
 
   /* ========================= 起動 ========================= */
   D.start({ render, resolveValue });
