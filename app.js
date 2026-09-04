@@ -9,6 +9,7 @@
  * ========================================================================= */
 (function () {
   "use strict";
+
   const D = window.DashCore;
   const { CFG, F, C } = D;
 
@@ -66,17 +67,21 @@
     const answered = rows.filter((r) => D.tokens(r[F.gender]).length || D.tokens(r[F.area]).length).length;
     const richU    = rows.filter((r) => D.tokens(r[F.richmenu], true).length).length;
     const srcU     = rows.filter((r) => D.tokens(r[F.source], false).length).length;
+
     const byMonth = {};
     rows.forEach((r) => { const m = (r[F.addedAt] || "").slice(0, 7); if (m) byMonth[m] = (byMonth[m] || 0) + 1; });
     const months = Object.keys(byMonth).sort();
     const lastMonth = months.length ? byMonth[months[months.length - 1]] : 0;
+
     const ages = rows.map((r) => calculateAge(r[F.birth])).filter((a) => a !== null);
     const avgAge = ages.length ? Math.round(ages.reduce((a, b) => a + b, 0) / ages.length) : 0;
+
     const pct = (n) => (total ? Math.round((n / total) * 100) : 0);
     const vals = {
       total, activeRate: pct(active), blockRate: pct(blocked), answerRate: pct(answered),
       lastMonth, richUsers: richU, srcUsers: srcU, avgAge,
     };
+
     const html = CFG.kpis.map((k) => {
       const accent = k.accent || "";
       const v = vals[k.key] ?? 0;
@@ -112,16 +117,19 @@
     const host = D.$(hostSel);
     if (!host) { console.warn(`[dashboard] ${hostSel} が見つかりません`); return; }
     host.innerHTML = "";
+
     list.forEach((c, i) => {
       const canvasId = `${hostSel.slice(1)}_${c.key}`;
       const field = D.realField(c.field);
+
       // 単一選択でも gender は複数値(カンマ)が入り得るので分割する
       const split = c.multi || c.key === "gender";
-
       const opts = { includeEmpty: false, splitComma: split };
+
       // 並び順の固定（orderRef 優先、無ければ order）
       if (c.orderRef && CFG[c.orderRef]) opts.order = CFG[c.orderRef];
       if (c.order) opts.order = c.order;
+
       // 0件補完: masterRef があれば「マスタ全件」を、無ければ「データ内の全選択肢」を使う
       if (c.fillZero) {
         opts.fillZero = true;
@@ -139,10 +147,9 @@
         return;
       }
 
-      // サブラベル: 全件系は「全N項目」、通常は「上位N」
+      // サブラベル: 全件系は「全項目N」、通常は「上位N」
       const showAll = !!(opts.order || c.fillZero || c.limit === null);
-      const sub = showAll ? `${tag} · 全${agg.labels.length}項目` : `${tag} · 上位${CFG.topN}`;
-
+      const sub = showAll ? `${tag}-全項目${agg.labels.length}` : `${tag}-上位${CFG.topN}`;
       host.insertAdjacentHTML("beforeend", D.panelCanvas(c.title, canvasId, sub, agg.labels.length));
       D.drawBarH(canvasId, agg, palette, i);
     });
