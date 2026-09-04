@@ -1,0 +1,81 @@
+/* =========================================================================
+ *  geo-section.css — 居住地・勤務地 セクション用スタイル（追加分）
+ *  既存 styles.css の変数（--panel/--stroke/--attr 等）を利用。
+ *  フラット・直角のトーンを踏襲。
+ * ======================================================================= */
+
+/* ---- フィルタ ---- */
+.geo-filters {
+  background: var(--panel);
+  border-top: 2px solid var(--attr-line);
+  padding: 16px 18px;
+  margin: 8px 2px var(--gap);
+}
+.geo-filters-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+.geo-filters-head h3 { font-family: var(--font-display); font-weight: 700; font-size: 15px; margin: 0; }
+.geo-fcount { font-size: 12px; color: var(--muted); }
+.geo-clear {
+  margin-left: auto; border: 1px solid var(--stroke); background: #fff; color: var(--muted);
+  font-size: 12px; padding: 6px 12px; cursor: pointer; border-radius: 0; font-family: var(--font);
+}
+.geo-clear:hover { background: var(--bg); color: var(--text); }
+
+.geo-fgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.geo-fgroup { min-width: 0; }
+.geo-flabel { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 8px; display: flex; gap: 6px; align-items: center; }
+.geo-flabel .geo-badge {
+  font-size: 10px; font-weight: 600; color: #fff; background: var(--attr);
+  border-radius: 999px; padding: 1px 7px; line-height: 1.6;
+}
+.geo-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.geo-chip {
+  font-size: 12px; padding: 5px 10px; border: 1px solid var(--stroke); background: #fff; color: var(--muted);
+  cursor: pointer; border-radius: 999px; user-select: none; white-space: nowrap; transition: .12s;
+}
+.geo-chip:hover { border-color: var(--attr); color: var(--text); }
+.geo-chip.on { background: var(--attr); border-color: var(--attr); color: #fff; font-weight: 600; }
+
+.geo-selected {
+  margin-top: 12px; font-size: 12px; color: var(--muted); line-height: 1.8;
+  border-top: 1px dashed var(--stroke); padding-top: 10px;
+}
+.geo-selected b { color: var(--text); }
+.geo-seltag {
+  display: inline-block; background: var(--attr-soft); color: var(--attr); border: 1px solid var(--attr-line);
+  border-radius: 999px; padding: 1px 9px; margin: 2px 4px 2px 0; font-size: 11px;
+}
+
+/* ---- パネルグリッド（キャプチャ準拠の配置）---- */
+.geo-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap);
+  grid-template-areas:
+    "resSum   resDetail"
+    "walk     resDetail"
+    "wrkSum   wrkDetail";
+}
+.geo-a-resSum   { grid-area: resSum; }
+.geo-a-resDetail{ grid-area: resDetail; }
+.geo-a-walk     { grid-area: walk; }
+.geo-a-wrkSum   { grid-area: wrkSum; }
+.geo-a-wrkDetail{ grid-area: wrkDetail; }
+
+/* パネル上辺は属性カラー（青）*/
+.geo-grid .panel { border-top: 2px solid var(--attr-line); }
+
+/* チャート領域の高さ（詳細は縦長）*/
+.geo-box { position: relative; height: 210px; }
+.geo-box.tall { height: 470px; }
+.geo-box.small { height: 170px; }
+
+/* ---- レスポンシブ ---- */
+@media (max-width: 1080px) {
+  .geo-fgrid { grid-template-columns: 1fr 1fr; }
+  .geo-grid {
+    grid-template-columns: 1fr;
+    grid-template-areas: "resSum" "resDetail" "walk" "wrkSum" "wrkDetail";
+  }
+  .geo-box.tall { height: 420px; }
+}
+@media (max-width: 560px) {
+  .geo-fgrid { grid-template-columns: 1fr; }
+}
