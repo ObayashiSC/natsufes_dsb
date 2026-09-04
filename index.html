@@ -125,15 +125,17 @@
         <section class="grid-2 dom-attr" id="attrGrid"></section>
 
         <!-- ===== Domain 2: Acquisition (緑) ===== -->
-        <div class="section-label dom-acq" id="acquisition">
-          <div>
-            <h2>流入経路 <span class="note">※ ユーザー属性とは別軸</span></h2>
+        <div class="section-label dom-acq" id="acquisition" style="flex-wrap:wrap">
+          <!-- 左: 流入経路の大見出し（左チャートの上）-->
+          <div style="flex:1 1 48%; min-width:0">
+            <h2>流入経路（みんまちLINE公式アカウントへの流入経路） <span class="note">※ ユーザー属性とは別軸</span></h2>
             <p>ユーザーが「どこから来たか」を示す獲得チャネル指標</p>
-            <p style="margin:8px 0 0;font-size:13px;line-height:1.7;color:var(--acq);font-weight:600">
-              流入経路（みんまちLINE公式アカウントへの流入経路）　／　認知経路（にほんの夏フェスの認知経路）
-            </p>
           </div>
-          <span class="meta" id="acqMeta">–</span>
+          <!-- 右: 認知経路の大見出し（右チャートの上）※同じ h2 フォント -->
+          <div style="flex:1 1 48%; min-width:0; display:flex; align-items:baseline; gap:12px">
+            <h2>認知経路（にほんの夏フェスの認知経路）</h2>
+            <span class="meta" id="acqMeta">–</span>
+          </div>
         </div>
         <section class="grid-2 dom-acq" id="acqGrid"></section>
 
