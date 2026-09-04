@@ -140,16 +140,18 @@
         <section class="grid-2 dom-acq" id="acqGrid"></section>
 
         <!-- ===== Domain 3: Engagement / Rich menu (紫) ===== -->
-        <div class="section-label dom-rich" id="engagement" style="flex-wrap:wrap">
-          <!-- 左: エンゲージメント大見出し（左チャートの上）-->
-          <div style="flex:1 1 38%; min-width:0">
-            <h2>エンゲージメント</h2>
-            <p>ユーザーが「何を押したか / まちにどれだけ愛着があるか」を示す行動指標</p>
+        <!-- 下の grid-2 と同じ列構成にして、richMeta を左チャートの右端に揃える -->
+        <div class="section-label dom-rich" id="engagement" style="display:grid; grid-template-columns:1fr 1fr; gap:var(--gap); align-items:start">
+          <!-- 左セル: 大見出し(左) + のべ〜クリック(左チャートの右端に右寄せ) -->
+          <div style="min-width:0; display:flex; align-items:baseline; gap:12px">
+            <div style="min-width:0">
+              <h2>エンゲージメント</h2>
+              <p>ユーザーが「何を押したか / まちにどれだけ愛着があるか」を示す行動指標</p>
+            </div>
+            <span class="meta" id="richMeta" style="margin-left:auto">–</span>
           </div>
-          <!-- 右: 「のべ〜クリック」を 左チャート寄り(グラフ間)に配置 -->
-          <div style="flex:1 1 60%; min-width:0; display:flex; align-items:baseline">
-            <span class="meta" id="richMeta" style="margin-left:0">–</span>
-          </div>
+          <!-- 右セル: 空 -->
+          <div></div>
         </div>
         <section class="grid-2 dom-rich" id="engGrid"></section>
 
