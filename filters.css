@@ -1,90 +1,129 @@
 /* =========================================================================
- *  filters.css — グローバルフィルターバー（スクロール追従・sticky）
+ *  filters.css — グローバルフィルター（左サイドバー配置版）
+ *  ------------------------------------------------------------------------
+ *  ★仕様変更（今回）:
+ *   ・フィルターは左サイドバー内（Analyticsメニューの下・Data sourceの上）に配置。
+ *   ・期間フィルター（.slider-panel）もサイドバー内へ移動。
+ *   ・日付以外（性別/年代/居住地/勤務地）は複数選択できるプルダウン（.gf-dd）。
  *  既存 styles.css の変数（--panel/--stroke/--attr 等）を利用。
- *  フラット・直角のトーンを踏襲。
  * ======================================================================= */
 
-/* ---- バー本体（期間フィルター直下・画面上部に固定）---- */
-.gfilter-bar {
-  position: -webkit-sticky;
-  position: sticky;
-  top: 0;
-  z-index: 60;                                  /* グラフ(canvas)より前面 */
-  margin: 0 0 var(--gap);
-  padding: 14px 18px;
+/* サイドバーはフィルター追加で縦に伸びるため、縦スクロール可に */
+.sidebar { overflow-y: auto; }
+
+/* ---- フィルターパネル本体（サイドバー内）---- */
+.side-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 4px 0 6px;
+  padding-top: 14px;
   border-top: 2px solid var(--attr-line);
-  box-shadow: 0 6px 16px rgba(16, 24, 40, .08); /* 固定時に浮いて見える */
 }
 
 /* ---- ヘッダ行 ---- */
-.gfilter-bar .gf-head {
-  display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap;
-}
-.gfilter-bar .gf-title { font-family: var(--font-display); font-weight: 700; font-size: 15px; }
-.gfilter-bar .gf-count {
-  font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums;
-  background: var(--bg); padding: 4px 10px; border-radius: 0;
-}
-.gfilter-bar .gf-clear {
+.side-filter .gf-head { display: flex; align-items: center; gap: 8px; }
+.side-filter .gf-title { font-family: var(--font-display); font-weight: 700; font-size: 13px; }
+.side-filter .gf-clear {
   margin-left: auto; border: 1px solid var(--stroke); background: #fff; color: var(--muted);
-  font-size: 12px; padding: 6px 12px; cursor: pointer; border-radius: 0; font-family: var(--font);
+  font-size: 11px; padding: 4px 10px; cursor: pointer; border-radius: 0; font-family: var(--font);
 }
-.gfilter-bar .gf-clear:hover { background: var(--bg); color: var(--text); }
+.side-filter .gf-clear:hover { background: var(--bg); color: var(--text); }
 
-/* ---- 期間フィルター（.slider-panel をここへ移動）---- */
-.gfilter-bar .gf-period { margin-bottom: 12px; }
-.gfilter-bar .gf-period-panel {
-  margin: 0;                     /* 元の下マージンを打ち消す */
+/* ---- 件数カウンタ ---- */
+.side-filter .gf-count {
+  font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums;
+  background: var(--bg); padding: 4px 9px; border-radius: 0; align-self: flex-start;
+}
+
+/* ---- 期間フィルター（.slider-panel をここへ移動・縦積みに）---- */
+.side-filter .gf-period { margin: 0; }
+.side-filter .slider-panel.gf-period-panel {
+  margin: 0;
   padding: 0 0 12px;
-  background: transparent;       /* 二重パネルに見えないように */
-  border-top: none;
+  background: transparent;
   box-shadow: none;
-  border-bottom: 1px dashed var(--stroke);  /* カテゴリ群との区切り線 */
+  border-bottom: 1px dashed var(--stroke);
+  display: flex;
+  flex-direction: column;         /* 横並び→縦積み（狭幅対応）*/
+  align-items: stretch;
+  gap: 10px;
+}
+.side-filter .slider-panel .s-title { font-size: 12px; }
+.side-filter .slider-panel .slider-wrap {
+  min-width: 0;                   /* 320px の下限を解除して収める */
+  width: 100%;
+  padding: 14px 6px 2px;          /* ツールチップ用に上を少し確保 */
+}
+.side-filter .slider-panel .range-readout {
+  white-space: normal;
+  text-align: center;
+  font-size: 11px;
+  line-height: 1.6;
 }
 
-/* ---- 4カテゴリのグリッド ---- */
-.gfilter-bar .gf-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
-.gfilter-bar .gf-group { min-width: 0; }
-.gfilter-bar .gf-label {
-  font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 8px;
-  display: flex; gap: 6px; align-items: center;
-}
-.gfilter-bar .gf-badge {
-  font-size: 10px; font-weight: 600; color: #fff; background: var(--attr);
-  border-radius: 999px; padding: 1px 7px; line-height: 1.6;
-}
+/* ---- プルダウン群 ---- */
+.side-filter .gf-dds { display: flex; flex-direction: column; gap: 8px; }
 
-/* ---- チップ ---- */
-.gfilter-bar .gf-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.gfilter-bar .gf-chip {
-  font-size: 12px; padding: 5px 10px; border: 1px solid var(--stroke); background: #fff; color: var(--muted);
-  cursor: pointer; border-radius: 999px; user-select: none; white-space: nowrap; transition: .12s;
-}
-.gfilter-bar .gf-chip:hover { border-color: var(--attr); color: var(--text); }
-.gfilter-bar .gf-chip.on { background: var(--attr); border-color: var(--attr); color: #fff; font-weight: 600; }
+.gf-dd { position: relative; }
 
-/* ---- 選択中サマリ枠 ---- */
-.gfilter-bar .gf-selected {
-  margin-top: 12px; font-size: 12px; color: var(--muted); line-height: 1.9;
+/* プルダウンの見えるボタン */
+.gf-dd-btn {
+  width: 100%;
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 10px;
+  border: 1px solid var(--stroke); background: #fff;
+  font-family: var(--font); font-size: 12px; color: var(--text);
+  cursor: pointer; border-radius: 0; text-align: left; transition: .12s;
+}
+.gf-dd-btn:hover { border-color: var(--attr); }
+.gf-dd.open .gf-dd-btn { border-color: var(--attr); box-shadow: 0 0 0 2px var(--attr-soft); }
+.gf-dd.has .gf-dd-btn { border-color: var(--attr); background: var(--attr-soft); }
+
+.gf-dd-cap { font-weight: 700; white-space: nowrap; }
+.gf-dd-sum {
+  margin-left: auto; color: var(--muted);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 110px; text-align: right;
+}
+.gf-dd.has .gf-dd-sum { color: var(--attr); font-weight: 600; }
+.gf-dd-arrow { color: var(--dim); font-size: 10px; transition: transform .15s; flex: none; }
+.gf-dd.open .gf-dd-arrow { transform: rotate(180deg); }
+
+/* 開いた選択肢メニュー（複数選択チェックボックス）*/
+.gf-dd-pop {
+  position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 90;
+  background: #fff; border: 1px solid var(--stroke);
+  box-shadow: 0 10px 24px rgba(16, 24, 40, .16);
+  max-height: 260px; overflow-y: auto; padding: 4px 0;
+}
+.gf-dd-opt {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 11px; font-size: 12px; color: var(--text);
+  cursor: pointer; user-select: none;
+}
+.gf-dd-opt:hover { background: var(--bg); }
+.gf-dd-opt input { accent-color: var(--attr); width: 14px; height: 14px; flex: none; }
+.gf-dd-opt span { line-height: 1.35; }
+
+/* ---- 選択中サマリ（全体）---- */
+.side-filter .gf-selected {
+  font-size: 11px; color: var(--muted); line-height: 1.9;
   border-top: 1px dashed var(--stroke); padding-top: 10px;
 }
-.gfilter-bar .gf-selected b { color: var(--text); }
-.gfilter-bar .gf-sep { color: var(--dim); margin: 0 8px; }
-.gfilter-bar .gf-seltag {
+.side-filter .gf-selected b { color: var(--text); }
+.side-filter .gf-sep { color: var(--dim); margin: 0 4px; }
+.side-filter .gf-seltag {
   display: inline-block; background: var(--attr-soft); color: var(--attr); border: 1px solid var(--attr-line);
-  border-radius: 999px; padding: 1px 9px; margin: 2px 4px 2px 0; font-size: 11px;
+  border-radius: 999px; padding: 1px 8px; margin: 2px 3px 2px 0; font-size: 10.5px;
 }
 
-/* ---- レスポンシブ ---- */
-@media (max-width: 1080px) {
-  .gfilter-bar .gf-grid { grid-template-columns: 1fr 1fr; }
+/* =========================================================================
+ *  モバイル（サイドバー非表示時）: フィルターを本文上部に横並び表示
+ *  styles.css は max-width:760px で .sidebar { display:none } になるため、
+ *  その場合はフィルターパネルをカード化して見えるようにする。
+ * ======================================================================= */
+@media (max-width: 760px) {
+  .sidebar { overflow-y: visible; }
+  /* サイドバー内に注入されたフィルターは、サイドバーごと非表示になる。
+     モバイルでもフィルターを使いたい場合は、必要に応じて別途対応。 */
 }
-@media (max-width: 560px) {
-  .gfilter-bar { position: static; box-shadow: none; }  /* 狭幅では固定解除（縦に長いため）*/
-  .gfilter-bar .gf-grid { grid-template-columns: 1fr; }
-}
-
-/* ===== アンカー移動時のスクロール停止位置を固定バー分だけ下げる ===== */
-:root { --gf-bar-h: 200px; }   /* 固定バーのおおよその高さ（フォールバック）*/
-html { scroll-padding-top: calc(var(--gf-bar-h) + 16px); }
-.section-label { scroll-margin-top: calc(var(--gf-bar-h) + 16px); }

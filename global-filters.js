@@ -1,9 +1,13 @@
 /* =========================================================================
  *  global-filters.js — グローバルフィルター（性別 / 年代 / 居住地 / 勤務地）
  *  ------------------------------------------------------------------------
- *  ・期間フィルター（.slider-panel）の直下に、スクロール追従（sticky）の
- *    フィルターバーを自動挿入する。
- *  ・複数選択（チップ式）。選択中の内容を確認する枠を内蔵。
+ *  ★仕様変更（今回）:
+ *    ・フィルターUIを「左サイドバー」（Analyticsメニューの下・Data sourceの上）へ
+ *      まとめて配置する。
+ *    ・期間フィルター（.slider-panel）もサイドバー内へ物理移動する。
+ *    ・日付以外（性別 / 年代 / 居住地 / 勤務地）は「複数選択できるプルダウン」に
+ *      変更（従来のチップ式は廃止）。
+ *
  *  ・状態は window.GFilter に集約。app.js（KPI/折れ線/属性/流入/行動）と
  *    geo-section.js（居住地・勤務地）の両方が、この単一の状態で絞り込む。
  *
@@ -24,7 +28,7 @@ window.GFilter = (function () {
   /* ---- 表記ゆれ吸収（「エリアのビル」↔「エリアビル」）---- */
   function normB(s) { return String(s || "").replace(/エリアのビル/g, "エリアビル").trim(); }
 
-  /* ---- 選択肢の並び順（存在するものだけチップ化する）---- */
+  /* ---- 選択肢の並び順（存在するものだけ選択肢化する）---- */
   var ORDER = {
     gender: ["男性", "女性", "回答しない"],
     age:    ["〜19歳", "20代", "30代", "40代", "50代", "60代〜"],
@@ -115,7 +119,7 @@ window.GFilter = (function () {
   }
   function subscribe(cb) { if (typeof cb === "function") subscribers.push(cb); }
 
-  /* ===================== UI 構築 ===================== */
+  /* ===================== UI 定義 ===================== */
   var KEYS = [
     { k: "gender", label: "性別",   order: ORDER.gender, of: function (r) { return r[FLD.gender]; } },
     { k: "age",    label: "年代",   order: ORDER.age,    of: function (r) { return ageBand(r[FLD.birth]); } },
@@ -123,42 +127,62 @@ window.GFilter = (function () {
     { k: "wrk",    label: "勤務地", order: ORDER.wrk,    of: wrkGroupOf },
   ];
 
+  /* ---- サイドバーへフィルターパネルを注入し、期間フィルターを内部へ移動 ---- */
   function injectBar() {
     if (document.getElementById("gfilterBar")) return true;
-    var anchor = document.querySelector(".slider-panel");
-    if (!anchor) return false;
+
+    var sidebar = document.querySelector(".sidebar");
+    if (!sidebar) return false;
+
     var bar = document.createElement("section");
-    bar.className = "panel gfilter-bar";
+    bar.className = "side-filter";
     bar.id = "gfilterBar";
-    var groups = KEYS.map(function (g) {
+
+    var dds = KEYS.map(function (g) {
       return (
-        '<div class="gf-group">' +
-          '<div class="gf-label">' + g.label +
-            ' <span class="gf-badge" id="gfb_' + g.k + '" style="display:none"></span>' +
-          '</div>' +
-          '<div class="gf-chips" id="gf_' + g.k + '"></div>' +
+        '<div class="gf-dd" id="gfdd_' + g.k + '" data-key="' + g.k + '">' +
+          '<button type="button" class="gf-dd-btn" id="gfbtn_' + g.k + '" aria-expanded="false">' +
+            '<span class="gf-dd-cap">' + g.label + '</span>' +
+            '<span class="gf-dd-sum" id="gfsum_' + g.k + '">すべて</span>' +
+            '<span class="gf-dd-arrow" aria-hidden="true">▾</span>' +
+          '</button>' +
+          '<div class="gf-dd-pop" id="gfpop_' + g.k + '" hidden></div>' +
         '</div>'
       );
     }).join("");
+
     bar.innerHTML =
       '<div class="gf-head">' +
         '<span class="gf-title">🔎 フィルター</span>' +
-        '<span class="gf-count" id="gfCount">全件表示</span>' +
         '<button type="button" class="gf-clear" id="gfClear">クリア</button>' +
       '</div>' +
-      '<div class="gf-period" id="gfPeriod"></div>' +  /* ← 既存の期間フィルターをここへ移動 */
-      '<div class="gf-grid">' + groups + '</div>' +
+      '<div class="gf-count" id="gfCount">全件表示</div>' +
+      '<div class="gf-period" id="gfPeriod"></div>' +   /* ← 期間フィルターをここへ移動 */
+      '<div class="gf-dds">' + dds + '</div>' +
       '<div class="gf-selected" id="gfSelected">選択中のフィルタはありません（全件表示）。</div>';
-    anchor.parentNode.insertBefore(bar, anchor.nextSibling);
-    // 既存の期間フィルター（.slider-panel）を、この固定バーの先頭へ物理移動する。
+
+    // Data source フッターの直前に差し込む（無ければ末尾）
+    var foot = sidebar.querySelector(".side-foot");
+    if (foot) sidebar.insertBefore(bar, foot);
+    else sidebar.appendChild(bar);
+
+    // 既存の期間フィルター（.slider-panel）をパネル先頭へ物理移動する。
     // ノードごと動かすため noUiSlider の実体や dashboard-core.js のイベントはそのまま生きる。
     var period = document.getElementById("gfPeriod");
-    if (period && anchor && anchor.parentNode !== period) {
-      anchor.classList.add("gf-period-panel");
-      period.appendChild(anchor);
+    var slider = document.querySelector(".slider-panel");
+    if (period && slider && slider.parentNode !== period) {
+      slider.classList.add("gf-period-panel");
+      period.appendChild(slider);
     }
+
     var clr = document.getElementById("gfClear");
     if (clr) clr.onclick = clearAll;
+
+    // 外側クリックで開いているプルダウンを閉じる
+    document.addEventListener("click", function (e) {
+      if (!e.target.closest(".gf-dd")) closeAllPops();
+    });
+
     return true;
   }
 
@@ -171,38 +195,86 @@ window.GFilter = (function () {
     return out;
   }
 
-  function buildChips() {
+  function closeAllPops() {
     KEYS.forEach(function (g) {
-      var host = document.getElementById("gf_" + g.k);
-      if (!host) return;
-      host.innerHTML = "";
+      var pop = document.getElementById("gfpop_" + g.k);
+      var dd  = document.getElementById("gfdd_" + g.k);
+      var btn = document.getElementById("gfbtn_" + g.k);
+      if (pop) pop.hidden = true;
+      if (dd) dd.classList.remove("open");
+      if (btn) btn.setAttribute("aria-expanded", "false");
+    });
+  }
+  function togglePop(k) {
+    var pop = document.getElementById("gfpop_" + k);
+    var dd  = document.getElementById("gfdd_" + k);
+    var btn = document.getElementById("gfbtn_" + k);
+    if (!pop) return;
+    var willOpen = pop.hidden;
+    closeAllPops();
+    if (willOpen) {
+      pop.hidden = false;
+      if (dd) dd.classList.add("open");
+      if (btn) btn.setAttribute("aria-expanded", "true");
+    }
+  }
+
+  /* ---- プルダウン（複数選択チェックボックス）を構築 ---- */
+  function buildDropdowns() {
+    KEYS.forEach(function (g) {
+      var pop = document.getElementById("gfpop_" + g.k);
+      var btn = document.getElementById("gfbtn_" + g.k);
+      if (!pop || !btn) return;
+
+      // トグル
+      btn.onclick = function (e) { e.stopPropagation(); togglePop(g.k); };
+
+      // オプション（0件の選択肢は出さない：実データに存在するものだけ）
+      pop.innerHTML = "";
       distinct(g.of, g.order).forEach(function (v) {
-        var c = document.createElement("span");
-        c.className = "gf-chip";
-        c.textContent = v;
-        c.onclick = function () {
+        var lab = document.createElement("label");
+        lab.className = "gf-dd-opt";
+        var cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.value = v;
+        cb.checked = STATE[g.k].has(v);
+        cb.onchange = function () {
           var set = STATE[g.k];
-          if (set.has(v)) { set.delete(v); c.classList.remove("on"); }
-          else { set.add(v); c.classList.add("on"); }
-          updateBadges();
+          if (cb.checked) set.add(v); else set.delete(v);
+          updateSummary(g);
           notify();
         };
-        host.appendChild(c);
+        var span = document.createElement("span");
+        span.textContent = v;
+        lab.appendChild(cb);
+        lab.appendChild(span);
+        pop.appendChild(lab);
       });
+
+      updateSummary(g);
     });
-    updateBadges();
     renderSelected();
   }
 
-  function updateBadges() {
-    KEYS.forEach(function (g) {
-      var b = document.getElementById("gfb_" + g.k);
-      if (!b) return;
-      var n = STATE[g.k].size;
-      if (n) { b.style.display = ""; b.textContent = n; } else { b.style.display = "none"; }
-    });
+  /* ---- 各プルダウンのボタン表示（選択サマリ）を更新 ---- */
+  function updateSummary(g) {
+    var el = document.getElementById("gfsum_" + g.k);
+    var dd = document.getElementById("gfdd_" + g.k);
+    if (!el) return;
+    var set = STATE[g.k];
+    if (!set.size) {
+      el.textContent = "すべて";
+      if (dd) dd.classList.remove("has");
+    } else if (set.size === 1) {
+      el.textContent = Array.from(set)[0];
+      if (dd) dd.classList.add("has");
+    } else {
+      el.textContent = set.size + "件選択";
+      if (dd) dd.classList.add("has");
+    }
   }
 
+  /* ---- 選択中サマリ（全体）---- */
   function renderSelected() {
     var el = document.getElementById("gfSelected");
     if (!el) return;
@@ -220,8 +292,9 @@ window.GFilter = (function () {
 
   function clearAll() {
     KEYS.forEach(function (g) { STATE[g.k].clear(); });
-    document.querySelectorAll("#gfilterBar .gf-chip.on").forEach(function (c) { c.classList.remove("on"); });
-    updateBadges();
+    // チェックを外す
+    document.querySelectorAll("#gfilterBar .gf-dd-opt input:checked").forEach(function (cb) { cb.checked = false; });
+    KEYS.forEach(function (g) { updateSummary(g); });
     notify();
   }
 
@@ -239,7 +312,7 @@ window.GFilter = (function () {
     var timer = setInterval(function () {
       tries++;
       var ready = window.DashCore && window.DashCore.state && Array.isArray(window.DashCore.state.RAW) && window.DashCore.state.RAW.length;
-      if (injectBar() && ready) { clearInterval(timer); buildChips(); }
+      if (injectBar() && ready) { clearInterval(timer); buildDropdowns(); }
       else if (tries > 100) { clearInterval(timer); }
     }, 120);
   }
