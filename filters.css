@@ -117,6 +117,12 @@
   border-radius: 999px; padding: 1px 8px; margin: 2px 3px 2px 0; font-size: 10.5px;
 }
 
+/* ---- ShopDrop: 期間フィルター単独配置時は末尾の区切り線を消す ---- */
+#sdPeriodBar .slider-panel.gf-period-panel {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
 /* =========================================================================
  *  モバイル（サイドバー非表示時）: フィルターを本文上部に横並び表示
  *  styles.css は max-width:760px で .sidebar { display:none } になるため、
