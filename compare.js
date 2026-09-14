@@ -172,13 +172,14 @@
     });
   }
 
-  /* ===================== KPI 比較表 ===================== */
+  /* ===================== KPI 比較表 =====================
+   *  ※「流入経路 判明率」は要件により廃止（ほぼ全件が判明し差が出ないため）
+   * ==================================================== */
   function metricsOf(rows) {
     var total = rows.length;
     var blocked = rows.filter(function (r) { return String(r[FLD.blocked]) === "1"; }).length;
     var answered = rows.filter(function (r) { return tokens(r[FLD.gender]).length || tokens(r[FLD.res]).length; }).length;
     var rich = rows.filter(function (r) { return tokens(r[FLD.rich]).length; }).length;
-    var src  = rows.filter(function (r) { return tokens(r[FLD.source]).length; }).length;
     var walkIn = rows.filter(function (r) { return FD.walkBand(r) === "徒歩圏"; }).length;
     var pct = function (n) { return total ? Math.round(n / total * 100) : 0; };
     return {
@@ -188,7 +189,6 @@
       "アンケート回答率":    pct(answered) + " %",
       "徒歩圏の割合":        pct(walkIn) + " %",
       "リッチメニュー利用率": pct(rich) + " %",
-      "流入経路 判明率":     pct(src) + " %",
     };
   }
 
