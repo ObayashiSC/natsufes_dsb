@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>比較モード（A / B）— LINE Growth Tracker</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- App theme -->
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="filters.css">
+  <link rel="stylesheet" href="compare.css">
+
+  <script src="config.js"></script>
+</head>
+
+<body class="page-fade">
+  <div class="app">
+    <!-- ===================== Sidebar ===================== -->
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="04_obayashi_c.png" alt="大林組 OBAYASHI" class="brand-logo" />
+      </div>
+
+      <nav class="nav-group switch-group">
+        <div class="cap">Dashboards</div>
+        <a class="nav-item switch-item" href="index.html" data-nav>
+          <span class="ic">◧</span> LINE Growth Tracker
+        </a>
+        <a class="nav-item switch-item" href="shopdrop.html" data-nav>
+          <span class="ic acq">◨</span> ShopDrop Tracker
+        </a>
+        <a class="nav-item switch-item active" href="compare.html" aria-current="page">
+          <span class="ic attr">⇄</span> 比較モード（A/B）
+        </a>
+      </nav>
+
+      <!-- 期間フィルター（A / B 共通） -->
+      <section class="side-filter">
+        <div class="gf-head"><span class="gf-title">🗓 期間（A/B共通）</span></div>
+        <div class="cmp-period">
+          <label>From <input type="date" id="pFrom"></label>
+          <label>To <input type="date" id="pTo"></label>
+        </div>
+      </section>
+
+      <div class="side-foot">
+        <span class="dot">●</span> Data source<br>
+        <code>line_datamart.json</code><br>
+        <span style="opacity:.7">records: <span id="recCount">–</span></span>
+      </div>
+    </aside>
+
+    <!-- ===================== Main ===================== -->
+    <main class="main">
+      <div class="topbar">
+        <div>
+          <img src="04_obayashi_c.png" alt="大林組 OBAYASHI" class="brand-logo-mobile" />
+          <h1>比較モード</h1>
+          <p>Aフィルターと Bフィルターで絞り込んだ2グループを、同じ指標で並べて比較します</p>
+        </div>
+        <div class="seg" id="modeSeg">
+          <button type="button" data-mode="count" class="active">件数</button>
+          <button type="button" data-mode="pct">構成比(%)</button>
+        </div>
+      </div>
+
+      <!-- モバイル用ナビ -->
+      <div class="switch-mobile">
+        <a class="chip" href="index.html" data-nav>LINE Growth Tracker</a>
+        <a class="chip" href="shopdrop.html" data-nav>ShopDrop Tracker</a>
+        <a class="chip chip-active" href="compare.html">比較モード</a>
+      </div>
+
+      <!-- ===== A / B フィルター設定 ===== -->
+      <section class="cmp-filters">
+        <div class="cmp-side side-a">
+          <div class="cmp-side-head">
+            <span class="cmp-badge badge-a">A</span>
+            <span class="cmp-cnt" id="cntA">–</span>
+            <button type="button" class="gf-clear" id="clrA">クリア</button>
+          </div>
+          <div class="cmp-dds" id="fltA"></div>
+          <div class="cmp-desc" id="descA">条件なし（全件）</div>
+        </div>
+
+        <div class="cmp-swap">
+          <button type="button" id="swapAB" title="A と B を入れ替え">⇄</button>
+        </div>
+
+        <div class="cmp-side side-b">
+          <div class="cmp-side-head">
+            <span class="cmp-badge badge-b">B</span>
+            <span class="cmp-cnt" id="cntB">–</span>
+            <button type="button" class="gf-clear" id="clrB">クリア</button>
+          </div>
+          <div class="cmp-dds" id="fltB"></div>
+          <div class="cmp-desc" id="descB">条件なし（全件）</div>
+        </div>
+      </section>
+
+      <div id="cmpContent">
+        <!-- 指標サマリ + 折れ線 -->
+        <section class="cmp-top">
+          <div class="panel cmp-panel">
+            <div class="panel-head"><h3>指標サマリ</h3><span class="sub">A vs B</span></div>
+            <div id="kpiCompare"></div>
+          </div>
+          <div class="panel cmp-panel">
+            <div class="panel-head"><h3>日毎の登録者数</h3><span class="sub">A / B 重ね表示</span></div>
+            <div class="cmp-box" style="height:300px"><canvas id="cmpLine"></canvas></div>
+          </div>
+        </section>
+
+        <!-- 各項目の比較グラフ -->
+        <div class="section-label dom-attr">
+          <div>
+            <h2>項目別 比較</h2>
+            <p>属性・徒歩圏・勤務地（サマリ/詳細）・流入経路・エンゲージメントを A / B で並記</p>
+          </div>
+        </div>
+        <section class="cmp-grid" id="cmpGrid"></section>
+
+        <div class="footer-note">
+          データは <code>line_datamart.json</code> を参照して自動描画されます（日次差し替え対応）
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ページ遷移フェード -->
+  <script>
+    (function () {
+      document.querySelectorAll("a[data-nav]").forEach(function (a) {
+        a.addEventListener("click", function (e) {
+          var href = a.getAttribute("href");
+          if (!href || href.indexOf("#") === 0) return;
+          e.preventDefault();
+          document.body.classList.add("page-leave");
+          setTimeout(function () { window.location.href = href; }, 180);
+        });
+      });
+    })();
+  </script>
+
+  <script src="filter-defs.js"></script>
+  <script src="compare.js"></script>
+</body>
+</html>

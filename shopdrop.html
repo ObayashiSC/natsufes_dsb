@@ -21,6 +21,7 @@
   <link rel="stylesheet" href="filters.css">
   <script src="config-shopdrop.js"></script>
 </head>
+
 <body class="page-fade">
   <div class="app">
     <!-- ===================== Sidebar ===================== -->
@@ -29,7 +30,7 @@
         <img src="04_obayashi_c.png" alt="大林組 OBAYASHI" class="brand-logo" />
       </div>
 
-      <!-- ダッシュボード切替（LINE ⇄ ShopDrop） -->
+      <!-- ダッシュボード切替（LINE ⇄ ShopDrop ⇄ 比較モード） -->
       <nav class="nav-group switch-group">
         <div class="cap">Dashboards</div>
         <a class="nav-item switch-item" href="index.html" data-nav>
@@ -37,6 +38,9 @@
         </a>
         <a class="nav-item switch-item active" href="shopdrop.html" aria-current="page">
           <span class="ic acq">◨</span> ShopDrop Tracker
+        </a>
+        <a class="nav-item switch-item" href="compare.html" data-nav>
+          <span class="ic attr">⇄</span> 比較モード（A/B）
         </a>
       </nav>
 
@@ -72,6 +76,7 @@
       <div class="switch-mobile">
         <a class="chip" href="index.html" data-nav>LINE Growth Tracker</a>
         <a class="chip chip-active" href="shopdrop.html">ShopDrop Tracker</a>
+        <a class="chip" href="compare.html" data-nav>比較モード</a>
       </div>
 
       <!-- KPI 3タイル: 総登録数 / DROP登録数 / SHOP登録数 -->
@@ -92,7 +97,6 @@
           <div class="panel">
             <div class="panel-head">
               <h3>日毎の登録者数</h3>
-              <!-- 全体 / DROP / SHOP 切替 -->
               <div class="seg" id="lineSeg">
                 <button type="button" data-plat="all" class="active">全体</button>
                 <button type="button" data-plat="DROP">DROP</button>
@@ -135,6 +139,7 @@
       });
     })();
   </script>
+
   <script src="dashboard-core.js"></script>
   <script src="app-shopdrop.js"></script>
   <!-- 追加: 期間フィルターを左サイドバーへ移動 -->

@@ -1,0 +1,95 @@
+/* =========================================================================
+ *  compare.css — 比較モード（A / B）専用スタイル
+ *  既存 styles.css の変数（--panel/--stroke/--attr 等）と
+ *  filters.css のプルダウン（.gf-dd 系）を再利用する。
+ *  A = 青（--attr） / B = オレンジ
+ * ======================================================================= */
+:root {
+  --cmp-a: #3f66b3;
+  --cmp-a-soft: rgba(63,102,179,.10);
+  --cmp-b: #c2643c;
+  --cmp-b-soft: rgba(194,100,60,.10);
+}
+
+/* ---- 期間（サイドバー内） ---- */
+.cmp-period { display: flex; flex-direction: column; gap: 8px; }
+.cmp-period label { font-size: 11.5px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+.cmp-period input[type="date"] {
+  flex: 1; min-width: 0; font-family: var(--font); font-size: 12px;
+  padding: 6px 8px; border: 1px solid var(--stroke); border-radius: 0; background: #fff; color: var(--text);
+}
+
+/* ---- A / B フィルター設定エリア ---- */
+.cmp-filters {
+  display: grid; grid-template-columns: 1fr 48px 1fr; gap: 12px;
+  align-items: stretch; margin: 4px 0 var(--gap);
+}
+.cmp-side { background: var(--panel); padding: 16px 18px; border-top: 3px solid var(--gray); }
+.cmp-side.side-a { border-top-color: var(--cmp-a); background: linear-gradient(0deg, var(--panel), var(--panel)); }
+.cmp-side.side-b { border-top-color: var(--cmp-b); }
+
+.cmp-side-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.cmp-badge {
+  font-family: var(--font-display); font-weight: 900; font-size: 14px; color: #fff;
+  width: 26px; height: 26px; display: grid; place-items: center; flex: none;
+}
+.badge-a { background: var(--cmp-a); }
+.badge-b { background: var(--cmp-b); }
+.cmp-cnt { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.cmp-side-head .gf-clear { margin-left: auto; }
+
+/* プルダウンを2列で並べる（項目が6つあるため） */
+.cmp-dds { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+.cmp-desc {
+  margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--stroke);
+  font-size: 11.5px; color: var(--muted); line-height: 1.7;
+}
+
+/* 入れ替えボタン */
+.cmp-swap { display: grid; place-items: center; }
+.cmp-swap button {
+  width: 40px; height: 40px; border: 1px solid var(--stroke); background: #fff;
+  color: var(--muted); font-size: 18px; cursor: pointer; border-radius: 0; transition: .15s;
+}
+.cmp-swap button:hover { background: var(--bg); color: var(--text); }
+
+/* ---- 上段（指標サマリ + 折れ線）---- */
+.cmp-top { display: grid; grid-template-columns: 1fr 1.4fr; gap: var(--gap); margin-bottom: var(--gap); }
+.cmp-panel { border-top: 2px solid var(--attr-line); }
+.cmp-box { position: relative; }
+
+/* ---- 指標比較テーブル ---- */
+.cmp-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.cmp-table th, .cmp-table td { padding: 9px 10px; border-bottom: 1px solid var(--stroke); text-align: left; }
+.cmp-table thead th { font-size: 11.5px; color: var(--dim); font-weight: 600; letter-spacing: .4px; }
+.cmp-table th.ca, .cmp-table td.ca { text-align: right; color: var(--cmp-a); font-weight: 700; font-variant-numeric: tabular-nums; background: var(--cmp-a-soft); }
+.cmp-table th.cb, .cmp-table td.cb { text-align: right; color: var(--cmp-b); font-weight: 700; font-variant-numeric: tabular-nums; background: var(--cmp-b-soft); }
+.cmp-table tbody tr:last-child td { border-bottom: none; }
+
+/* ---- 比較グラフのグリッド ---- */
+.cmp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap); }
+
+/* ---- レスポンシブ ---- */
+@media (max-width: 1080px) {
+  .cmp-filters { grid-template-columns: 1fr; }
+  .cmp-swap { padding: 4px 0; }
+  .cmp-swap button { width: 100%; height: 34px; }
+  .cmp-top { grid-template-columns: 1fr; }
+  .cmp-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .cmp-dds { grid-template-columns: 1fr; }
+}
+
+/* =========================================================================
+ *  通常画面（index.html）のサイドバーに置く「比較モードを開く」ボタン
+ *  ※ index.html からも compare.css を読み込むことでこのスタイルが適用される
+ * ======================================================================= */
+.side-filter .gf-compare {
+  display: block; text-align: center; text-decoration: none;
+  font-family: var(--font); font-size: 12px; font-weight: 700;
+  color: var(--cmp-a); background: var(--cmp-a-soft);
+  border: 1px solid var(--attr-line); padding: 9px 10px; transition: .15s;
+}
+.side-filter .gf-compare:hover { background: var(--cmp-a); color: #fff; }
