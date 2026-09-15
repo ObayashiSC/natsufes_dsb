@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Retention Effect Tracker — Dashboard</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- Inter=本文 / Noto Sans JP 900=インパクトのある見出し(和英対応) -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- App theme + config -->
+  <link rel="stylesheet" href="styles.css">
+  <!-- 追加: サイドバーのフィルター用スタイル（LINE版と共通） -->
+  <link rel="stylesheet" href="filters.css">
+  <!-- 追加: リテンション用スタイル -->
+  <link rel="stylesheet" href="retention.css">
+  <script src="config-retention.js"></script>
+</head>
+<body class="page-fade">
+  <div class="app">
+
+    <!-- ===================== Sidebar ===================== -->
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="04_obayashi_c.png" alt="大林組 OBAYASHI" class="brand-logo" />
+      </div>
+
+      <!-- ダッシュボード切替（LINE → 比較モード → ShopDrop → リテンション の順） -->
+      <nav class="nav-group switch-group">
+        <div class="cap">Dashboards</div>
+        <a class="nav-item switch-item" href="index.html" data-nav>
+          <span class="ic">◧</span> LINE Growth Tracker
+        </a>
+        <a class="nav-item switch-item" href="compare.html" data-nav>
+          <span class="ic attr">⇄</span> 比較モード（A/B）
+        </a>
+        <a class="nav-item switch-item" href="shopdrop.html" data-nav>
+          <span class="ic acq">◨</span> ShopDrop Tracker
+        </a>
+        <a class="nav-item switch-item active" href="retention.html" aria-current="page">
+          <span class="ic rich">◱</span> Retention Tracker
+        </a>
+      </nav>
+
+      <nav class="nav-group">
+        <div class="cap">Analytics</div>
+        <!-- data-target でセクションへスムーズスクロール -->
+        <div class="nav-item active" data-target="overview"><span class="ic">◧</span> Overview</div>
+        <div class="nav-item" data-target="channels"><span class="ic acq">◕</span> Channel（チャネル別）</div>
+        <div class="nav-item" data-target="detail"><span class="ic attr">◔</span> Detail（明細）</div>
+      </nav>
+
+      <!-- リテンションフィルタは retention.js がここへ自動挿入します -->
+
+      <div class="side-foot">
+        <span class="dot">●</span> Data source<br>
+        <code id="srcName">retention_result_YYYYMMDD.json</code><br>
+        <span style="opacity:.7">labels: <span id="recCount">–</span></span>
+      </div>
+    </aside>
+
+    <!-- ===================== Main ===================== -->
+    <main class="main">
+
+      <!-- Overview アンカー -->
+      <div class="topbar" id="overview">
+        <div>
+          <img src="04_obayashi_c.png" alt="大林組 OBAYASHI" class="brand-logo-mobile" />
+          <h1>Retention Effect Tracker</h1>
+          <p>LINE / DROP リテンション施策の 送信・開封・遷移・予約 を統合分析</p>
+        </div>
+        <div class="status">
+          <span class="pulse"></span>
+          Live datamart · updated <b id="genAt" style="margin-left:4px">–</b>
+        </div>
+      </div>
+
+      <!-- モバイル用 ダッシュボード切替 -->
+      <div class="switch-mobile">
+        <a class="chip" href="index.html" data-nav>LINE Growth Tracker</a>
+        <a class="chip" href="compare.html" data-nav>比較モード</a>
+        <a class="chip" href="shopdrop.html" data-nav>ShopDrop Tracker</a>
+        <a class="chip chip-active" href="retention.html">Retention Tracker</a>
+      </div>
+
+      <div id="content">
+
+        <!-- ===== 全体 KPI（リテンション全体の数） ===== -->
+        <div class="section-label">
+          <div>
+            <h2>全体<span class="note">リテンション全体の数</span></h2>
+            <p>選択中の label に紐づく全チャネル合計の指標</p>
+          </div>
+          <span class="meta" id="kpiMeta">–</span>
+        </div>
+        <section class="kpis" id="kpisAll"></section>
+
+        <!-- 注釈: 開封数が取得できないチャネルについて -->
+        <p class="ret-note">
+          ※ DROP リテンションメールは仕様上 <b>開封数が取得できない</b>ため、開封率タイルとファネルの開封段は表示されません。<br>
+          ※ LINE のリテンション数は友だち総数（line_retention.csv の最古レコード）を母数としています。A/B の送信数とは一致しません。
+        </p>
+
+        <!-- ===== チャネル別（channel ごとに KPI + method 別ファネル） ===== -->
+        <div class="section-label dom-acq" id="channels">
+          <div>
+            <h2>チャネル別ファネル</h2>
+            <p>channel ごとに全体指標を示し、その下に method（A / B）別のファネルを並記</p>
+          </div>
+        </div>
+        <section id="retChannels"></section>
+
+        <!-- ===== 明細 ===== -->
+        <div class="section-label dom-attr" id="detail">
+          <div>
+            <h2>明細</h2>
+            <p>method 単位の件数と率を一覧で確認</p>
+          </div>
+          <span class="meta">GA: <code id="gaSrc">–</code></span>
+        </div>
+        <section class="panel">
+          <div id="retTable"></div>
+        </section>
+
+        <div class="footer-note">
+          データは <code>retention_result_YYYYMMDD.json</code> を参照して自動描画されます（日次差し替え対応）
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ページ遷移フェード（違和感のない切替）-->
+  <script>
+    (function () {
+      document.querySelectorAll("a[data-nav]").forEach(function (a) {
+        a.addEventListener("click", function (e) {
+          var href = a.getAttribute("href");
+          if (!href || href.indexOf("#") === 0) return;
+          e.preventDefault();
+          document.body.classList.add("page-leave");
+          setTimeout(function () { window.location.href = href; }, 180);
+        });
+      });
+
+      /* Analyticsメニュー: クリックでセクションへスクロール（dashboard-core.js の bindNav 相当）*/
+      var items = document.querySelectorAll(".nav-item[data-target]");
+      items.forEach(function (item) {
+        item.addEventListener("click", function () {
+          items.forEach(function (x) { x.classList.remove("active"); });
+          item.classList.add("active");
+          var t = document.getElementById(item.dataset.target);
+          if (t) t.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      });
+      var secs = [].map.call(items, function (i) { return document.getElementById(i.dataset.target); }).filter(Boolean);
+      if (secs.length && "IntersectionObserver" in window) {
+        var io = new IntersectionObserver(function (es) {
+          es.forEach(function (en) {
+            if (en.isIntersecting) {
+              items.forEach(function (x) { x.classList.toggle("active", x.dataset.target === en.target.id); });
+            }
+          });
+        }, { rootMargin: "-20% 0px -70% 0px", threshold: 0 });
+        secs.forEach(function (s) { io.observe(s); });
+      }
+    })();
+  </script>
+
+  <script src="retention.js"></script>
+</body>
+</html>

@@ -1,0 +1,263 @@
+{
+  "generated_at": "2026-09-15 13:34:15",
+  "ga_source_file": "table_prop_ga_minmachi_shop.csv",
+  "run_date": "20260915",
+  "base_counts": {
+    "n1_line": {
+      "value": 833,
+      "source": "line_retention.csv (record_date=20260911)"
+    },
+    "n2_Retention_A_DROP": {
+      "value": null,
+      "source": null,
+      "note": null
+    },
+    "n2_Retention_B_DROP": {
+      "value": null,
+      "source": null,
+      "note": null
+    }
+  },
+  "line_snapshot": {
+    "record_date": "20260915",
+    "source_file": "LINE_user.csv",
+    "friend_count": 834,
+    "block_count": 82,
+    "active_count": 752,
+    "block_rate": 0.0983,
+    "recorded_at": "2026-09-15 13:34:13"
+  },
+  "funnels": [
+    {
+      "date": "20260914",
+      "method": "LINE_A",
+      "channel": "LINE",
+      "dest": "LINE",
+      "pair_id": "P01",
+      "label": "日本の夏フェス_20260914",
+      "utm_id": "line_cruiseA",
+      "service_id": null,
+      "service_event_id": "E000010697,E000010698",
+      "open_count": 240,
+      "message_delivery_count": 403,
+      "retention_file": null,
+      "count_file": null,
+      "transition_users": 48,
+      "transition_events": 169,
+      "reservation_match_key": "ServiceEventId=E000010697,E000010698",
+      "reservation_users": 0,
+      "base_type": "n1",
+      "base_count": 833,
+      "base_source": "n1_line",
+      "transition_rate": 0.0576,
+      "reservation_rate": 0.0,
+      "open_rate": 0.5955,
+      "open_rate_base": "message_delivery_count",
+      "transition_rate_per_open": 0.2
+    },
+    {
+      "date": "20260914",
+      "method": "LINE_B",
+      "channel": "LINE",
+      "dest": "LINE",
+      "pair_id": "P01",
+      "label": "日本の夏フェス_20260914",
+      "utm_id": "line_cruiseB",
+      "service_id": null,
+      "service_event_id": "E000010697,E000010698",
+      "open_count": 254,
+      "message_delivery_count": 379,
+      "retention_file": null,
+      "count_file": null,
+      "transition_users": 25,
+      "transition_events": 82,
+      "reservation_match_key": "ServiceEventId=E000010697,E000010698",
+      "reservation_users": 0,
+      "base_type": "n1",
+      "base_count": 833,
+      "base_source": "n1_line",
+      "transition_rate": 0.03,
+      "reservation_rate": 0.0,
+      "open_rate": 0.6702,
+      "open_rate_base": "message_delivery_count",
+      "transition_rate_per_open": 0.0984
+    },
+    {
+      "date": "20260914",
+      "method": "Retention_A",
+      "channel": "DROP",
+      "dest": "DROP",
+      "pair_id": "P01",
+      "label": "日本の夏フェス_20260914",
+      "utm_id": "drop_cruiseA",
+      "service_id": null,
+      "service_event_id": "E000010697,E000010698",
+      "open_count": null,
+      "message_delivery_count": 409,
+      "retention_file": null,
+      "count_file": null,
+      "transition_users": 14,
+      "transition_events": 45,
+      "reservation_match_key": "ServiceEventId=E000010697,E000010698",
+      "reservation_users": 0,
+      "base_type": "n2_fallback_delivery",
+      "base_count": 409,
+      "base_source": "Retention_A",
+      "transition_rate": 0.0342,
+      "reservation_rate": 0.0,
+      "open_rate": null,
+      "open_rate_base": null
+    },
+    {
+      "date": "20260914",
+      "method": "Retention_B",
+      "channel": "DROP",
+      "dest": "DROP",
+      "pair_id": "P01",
+      "label": "日本の夏フェス_20260914",
+      "utm_id": "drop_cruiseB",
+      "service_id": null,
+      "service_event_id": "E000010697,E000010698",
+      "open_count": null,
+      "message_delivery_count": 409,
+      "retention_file": null,
+      "count_file": null,
+      "transition_users": 9,
+      "transition_events": 25,
+      "reservation_match_key": "ServiceEventId=E000010697,E000010698",
+      "reservation_users": 0,
+      "base_type": "n2_fallback_delivery",
+      "base_count": 409,
+      "base_source": "Retention_B",
+      "transition_rate": 0.022,
+      "reservation_rate": 0.0,
+      "open_rate": null,
+      "open_rate_base": null
+    }
+  ],
+  "summary": {
+    "labels": [
+      "日本の夏フェス_20260914"
+    ],
+    "by_label": {
+      "日本の夏フェス_20260914": {
+        "overall": {
+          "base_count": 1651,
+          "message_delivery_count": 1600,
+          "open_count": 494,
+          "transition_users": 96,
+          "reservation_users": 0,
+          "open_rate": 0.6317,
+          "transition_rate": 0.0581,
+          "reservation_rate": 0.0
+        },
+        "channels": {
+          "DROP": {
+            "total": {
+              "base_count": 818,
+              "message_delivery_count": 818,
+              "open_count": null,
+              "transition_users": 23,
+              "reservation_users": 0,
+              "open_rate": null,
+              "transition_rate": 0.0281,
+              "reservation_rate": 0.0
+            },
+            "methods": {
+              "Retention_A": {
+                "base_count": 409,
+                "message_delivery_count": 409,
+                "open_count": null,
+                "transition_users": 14,
+                "reservation_users": 0,
+                "open_rate": null,
+                "transition_rate": 0.0342,
+                "reservation_rate": 0.0
+              },
+              "Retention_B": {
+                "base_count": 409,
+                "message_delivery_count": 409,
+                "open_count": null,
+                "transition_users": 9,
+                "reservation_users": 0,
+                "open_rate": null,
+                "transition_rate": 0.022,
+                "reservation_rate": 0.0
+              }
+            }
+          },
+          "LINE": {
+            "total": {
+              "base_count": 833,
+              "message_delivery_count": 782,
+              "open_count": 494,
+              "transition_users": 73,
+              "reservation_users": 0,
+              "open_rate": 0.6317,
+              "transition_rate": 0.0876,
+              "reservation_rate": 0.0
+            },
+            "methods": {
+              "LINE_A": {
+                "base_count": 833,
+                "message_delivery_count": 403,
+                "open_count": 240,
+                "transition_users": 48,
+                "reservation_users": 0,
+                "open_rate": 0.5955,
+                "transition_rate": 0.0576,
+                "reservation_rate": 0.0
+              },
+              "LINE_B": {
+                "base_count": 833,
+                "message_delivery_count": 379,
+                "open_count": 254,
+                "transition_users": 25,
+                "reservation_users": 0,
+                "open_rate": 0.6702,
+                "transition_rate": 0.03,
+                "reservation_rate": 0.0
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "block_trend": {
+    "first": {
+      "record_date": "20260911",
+      "friend_count": 833,
+      "block_count": 50,
+      "block_rate": 0.06
+    },
+    "latest": {
+      "record_date": "20260915",
+      "friend_count": 834,
+      "block_count": 82,
+      "block_rate": 0.0983
+    },
+    "block_increase": 32,
+    "block_rate_increase": 0.0383,
+    "history": [
+      {
+        "record_date": "20260911",
+        "source_file": "LINE_user.csv",
+        "friend_count": 833,
+        "block_count": 50,
+        "active_count": 783,
+        "block_rate": 0.06,
+        "recorded_at": "2026/9/14 12:36"
+      },
+      {
+        "record_date": "20260915",
+        "source_file": "LINE_user.csv",
+        "friend_count": 834,
+        "block_count": 82,
+        "active_count": 752,
+        "block_rate": 0.0983,
+        "recorded_at": "2026-09-15 13:34:13"
+      }
+    ]
+  }
+}
