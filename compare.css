@@ -11,12 +11,26 @@
   --cmp-b-soft: rgba(194,100,60,.10);
 }
 
-/* ---- 期間（サイドバー内） ---- */
-.cmp-period { display: flex; flex-direction: column; gap: 8px; }
-.cmp-period label { font-size: 11.5px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+/* ---- 期間（A / B のフィルターパネル内に個別配置） ----
+ *  従来はサイドバーで A/B 共通だったが、A と B で別々の期間を
+ *  比較できるよう、各パネル（.cmp-side）の中へ移動した。
+ */
+.cmp-period {
+  display: grid; grid-template-columns: auto 1fr 1fr; align-items: center; gap: 8px;
+  margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed var(--stroke);
+}
+.cmp-period-cap { font-size: 11.5px; font-weight: 700; color: var(--text); white-space: nowrap; }
+.cmp-period label { font-size: 11.5px; color: var(--muted); display: flex; align-items: center; gap: 6px; min-width: 0; }
 .cmp-period input[type="date"] {
-  flex: 1; min-width: 0; font-family: var(--font); font-size: 12px;
+  flex: 1; min-width: 0; width: 100%; font-family: var(--font); font-size: 12px;
   padding: 6px 8px; border: 1px solid var(--stroke); border-radius: 0; background: #fff; color: var(--text);
+}
+.cmp-side.side-a .cmp-period input[type="date"]:focus { outline: none; border-color: var(--cmp-a); }
+.cmp-side.side-b .cmp-period input[type="date"]:focus { outline: none; border-color: var(--cmp-b); }
+/* 追従（sticky）中は期間欄も畳んで高さを詰める */
+.cmp-filters.stuck .cmp-period { margin-bottom: 8px; padding-bottom: 8px; }
+@media (max-width: 560px) {
+  .cmp-period { grid-template-columns: 1fr; }
 }
 
 /* =========================================================================

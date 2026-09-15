@@ -30,7 +30,9 @@
   var mode = "count";                            /* count | pct */
 
   var ST = { A: FD.newState(), B: FD.newState() };
-  var PERIOD = { from: null, to: null };
+  /* ★期間は A / B それぞれ独立に保持する（従来の A/B 共通から変更） */
+  var PERIOD = { A: { from: null, to: null }, B: { from: null, to: null } };
+  var DOMAIN = { from: null, to: null };   /* データ全体の日付範囲（軸・入力の min/max 用） */
 
   var $ = function (s) { return document.querySelector(s); };
 
@@ -65,15 +67,18 @@
     var x = new Date(d);
     return x.getFullYear() + "-" + String(x.getMonth() + 1).padStart(2, "0") + "-" + String(x.getDate()).padStart(2, "0");
   }
-  function inPeriod(r) {
+  function inPeriod(r, side) {
+    var p = PERIOD[side];
     var d = toDate(r[FLD.added]);
     if (!d) return false;
-    if (PERIOD.from && dayKey(d) < PERIOD.from) return false;
-    if (PERIOD.to   && dayKey(d) > PERIOD.to)   return false;
+    if (p.from && dayKey(d) < p.from) return false;
+    if (p.to   && dayKey(d) > p.to)   return false;
     return true;
   }
-  function baseRows() { return RAW.filter(inPeriod); }
-  function rowsOf(side) { return FD.filter(ST[side], baseRows()); }
+  /* 期間だけを適用した行（side ごと） */
+  function baseRows(side) { return RAW.filter(function (r) { return inPeriod(r, side); }); }
+  /* 期間 + 属性フィルターを適用した行（side ごと） */
+  function rowsOf(side) { return FD.filter(ST[side], baseRows(side)); }
 
   /* =========================================================================
    *  ウィンドウ枠の固定（sticky）
@@ -206,6 +211,11 @@
     updateSum();
   }
 
+  /* 選択中の期間を説明文用に整形 */
+  function periodText(side) {
+    var p = PERIOD[side];
+    return "期間: " + (p.from || "—") + " 〜 " + (p.to || "—");
+  }
   function closeAllPops() {
     document.querySelectorAll(".gf-dd").forEach(function (dd) {
       var p = dd.querySelector(".gf-dd-pop");
@@ -222,18 +232,25 @@
       else if (set.size === 1) { dd._sum.textContent = Array.from(set)[0]; dd.classList.add("has"); }
       else                     { dd._sum.textContent = set.size + "件選択"; dd.classList.add("has"); }
     });
-    $("#descA").textContent = FD.describe(ST.A);
-    $("#descB").textContent = FD.describe(ST.B);
+    $("#descA").textContent = periodText("A") + " ／ " + FD.describe(ST.A);
+    $("#descB").textContent = periodText("B") + " ／ " + FD.describe(ST.B);
   }
 
   function clearSide(side) {
     FD.KEYS.forEach(function (g) { ST[side][g.k].clear(); });
     document.querySelectorAll("#flt" + side + " .gf-dd-opt input:checked").forEach(function (cb) { cb.checked = false; });
+    resetPeriod(side);                 /* 期間も全期間へ戻す */
     updateSum(); render();
   }
 
   function swapSides() {
     var tmp = ST.A; ST.A = ST.B; ST.B = tmp;
+    var tp = PERIOD.A; PERIOD.A = PERIOD.B; PERIOD.B = tp;   /* 期間も一緒に入れ替える */
+    ["A", "B"].forEach(function (side) {
+      var f = $("#pFrom" + side), t = $("#pTo" + side);
+      if (f) f.value = PERIOD[side].from || "";
+      if (t) t.value = PERIOD[side].to || "";
+    });
     buildSide("A"); buildSide("B"); render();
   }
 
@@ -294,7 +311,10 @@
   /* ===================== 折れ線（日毎の登録者数）===================== */
   function renderLine(rowsA, rowsB) {
     var days = [];
-    var ds = baseRows().map(function (r) { return toDate(r[FLD.added]); }).filter(Boolean).sort(function (x, y) { return x - y; });
+    /* A と B で期間が異なるため、日付軸は両期間の和集合（最小〜最大）で作る */
+    var ds = baseRows("A").concat(baseRows("B"))
+      .map(function (r) { return toDate(r[FLD.added]); }).filter(Boolean)
+      .sort(function (x, y) { return x - y; });
     if (!ds.length) return;
     var d = new Date(ds[0]); d.setHours(0, 0, 0, 0);
     var end = new Date(ds[ds.length - 1]); end.setHours(0, 0, 0, 0);
@@ -393,9 +413,9 @@
   /* ===================== 全体描画 ===================== */
   function render() {
     var rowsA = rowsOf("A"), rowsB = rowsOf("B");
-    var base = baseRows().length;
-    $("#cntA").textContent = rowsA.length + " / " + base + " 名";
-    $("#cntB").textContent = rowsB.length + " / " + base + " 名";
+    /* 分母は「その側の期間内の全件」＝期間も A/B で独立しているため側ごとに算出 */
+    $("#cntA").textContent = rowsA.length + " / " + baseRows("A").length + " 名";
+    $("#cntB").textContent = rowsB.length + " / " + baseRows("B").length + " 名";
     renderKPI(rowsA, rowsB);
     renderLine(rowsA, rowsB);
     renderCharts(rowsA, rowsB);
@@ -405,13 +425,26 @@
   function initPeriod() {
     var ds = RAW.map(function (r) { return toDate(r[FLD.added]); }).filter(Boolean).sort(function (a, b) { return a - b; });
     if (!ds.length) return;
-    PERIOD.from = dayKey(ds[0]);
-    PERIOD.to   = dayKey(ds[ds.length - 1]);
-    var f = $("#pFrom"), t = $("#pTo");
-    f.value = PERIOD.from; t.value = PERIOD.to;
-    f.min = t.min = PERIOD.from; f.max = t.max = PERIOD.to;
-    f.onchange = function () { PERIOD.from = f.value; render(); };
-    t.onchange = function () { PERIOD.to = t.value; render(); };
+    DOMAIN.from = dayKey(ds[0]);
+    DOMAIN.to   = dayKey(ds[ds.length - 1]);
+    ["A", "B"].forEach(function (side) {
+      PERIOD[side].from = DOMAIN.from;
+      PERIOD[side].to   = DOMAIN.to;
+      var f = $("#pFrom" + side), t = $("#pTo" + side);
+      if (!f || !t) return;
+      f.value = DOMAIN.from; t.value = DOMAIN.to;
+      f.min = t.min = DOMAIN.from; f.max = t.max = DOMAIN.to;
+      f.onchange = function () { PERIOD[side].from = f.value; updateSum(); render(); };
+      t.onchange = function () { PERIOD[side].to   = t.value; updateSum(); render(); };
+    });
+  }
+  /* 期間を A / B 個別にデータ全体の範囲へ戻す */
+  function resetPeriod(side) {
+    PERIOD[side].from = DOMAIN.from;
+    PERIOD[side].to   = DOMAIN.to;
+    var f = $("#pFrom" + side), t = $("#pTo" + side);
+    if (f) f.value = DOMAIN.from;
+    if (t) t.value = DOMAIN.to;
   }
 
   /* 通常画面から引き継いだフィルターを A に反映 */

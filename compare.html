@@ -43,14 +43,7 @@
         </a>
       </nav>
 
-      <!-- 期間フィルター（A / B 共通） -->
-      <section class="side-filter">
-        <div class="gf-head"><span class="gf-title">🗓 期間（A/B共通）</span></div>
-        <div class="cmp-period">
-          <label>From <input type="date" id="pFrom"></label>
-          <label>To <input type="date" id="pTo"></label>
-        </div>
-      </section>
+      <!-- 期間は A / B それぞれのフィルター内で個別に設定します -->
 
       <div class="side-foot">
         <span class="dot">●</span> Data source<br>
@@ -88,6 +81,11 @@
             <span class="cmp-cnt" id="cntA">–</span>
             <button type="button" class="gf-clear" id="clrA">クリア</button>
           </div>
+          <div class="cmp-period">
+            <span class="cmp-period-cap">🗓 期間</span>
+            <label>From <input type="date" id="pFromA"></label>
+            <label>To <input type="date" id="pToA"></label>
+          </div>
           <div class="cmp-dds" id="fltA"></div>
           <div class="cmp-desc" id="descA">条件なし（全件）</div>
         </div>
@@ -101,6 +99,11 @@
             <span class="cmp-badge badge-b">B</span>
             <span class="cmp-cnt" id="cntB">–</span>
             <button type="button" class="gf-clear" id="clrB">クリア</button>
+          </div>
+          <div class="cmp-period">
+            <span class="cmp-period-cap">🗓 期間</span>
+            <label>From <input type="date" id="pFromB"></label>
+            <label>To <input type="date" id="pToB"></label>
           </div>
           <div class="cmp-dds" id="fltB"></div>
           <div class="cmp-desc" id="descB">条件なし（全件）</div>
