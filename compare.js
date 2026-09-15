@@ -9,6 +9,14 @@
  *  ・データ取得は config.js の DATA_SOURCE を参照（dashboard-core.js は不使用）。
  *  ・表示は「件数」と「構成比(%)」をトグルで切替できる。
  *
+ *  ★レイアウト（指定のキャプチャ準拠・2列固定）
+ *      性別              ｜ 年代
+ *      居住地（サマリ）   ｜ 居住地（詳細）
+ *      徒歩圏・徒歩圏外   ｜ （空き）        ← solo: 左のみ
+ *      勤務地（サマリ）   ｜ 勤務地（詳細）
+ *      流入経路          ｜ 認知経路
+ *      リッチメニュー     ｜ まちへの愛着
+ *
  *  依存: Chart.js / config.js / filter-defs.js
  * ======================================================================= */
 (function () {
@@ -36,19 +44,21 @@
     return s.split(",").map(function (t) { return t.trim(); }).filter(Boolean);
   }
 
-  /* ---- 比較するグラフ一覧 ---- */
+  /* ---- 比較するグラフ一覧（この配列の並び順＝画面の並び順）----
+   *  solo: true … その行は左列のみに表示し、次の項目は次行の左から始める
+   * ------------------------------------------------------------ */
   var CHARTS = [
-    { key: "gender",    title: "性別",                 order: FD.ORDER.gender,    get: function (r) { return tokens(r[FLD.gender]); } },
-    { key: "age",       title: "年代",                 order: FD.ORDER.age,       get: function (r) { var v = FD.ageBand(r[FLD.birth]); return v ? [v] : []; } },
-    { key: "res",       title: "居住地（サマリ）",      order: FD.ORDER.res,       get: function (r) { var v = FD.resGroupOf(r); return v ? [v] : []; } },
-    { key: "resDetail", title: "居住地（詳細）",        order: FD.ORDER.resDetail, get: function (r) { var v = FD.resDetailOf(r); return v ? [v] : []; } },
-    { key: "walk",      title: "徒歩圏 / 徒歩圏外",     order: FD.ORDER.walk,      get: function (r) { var v = FD.walkBand(r); return v ? [v] : []; } },
-    { key: "wrk",       title: "勤務地（サマリ）",      order: FD.ORDER.wrk,       get: function (r) { var v = FD.wrkGroupOf(r); return v ? [v] : []; } },
-    { key: "wrkDetail", title: "勤務地（詳細）",        order: FD.ORDER.wrkDetail, get: function (r) { var v = FD.wrkDetailOf(r); return v ? [v] : []; } },
-    { key: "source",    title: "流入経路（登録トリガー）", order: null,             get: function (r) { return tokens(r[FLD.source]); } },
-    { key: "heard",     title: "認知経路（Q5・複数回答）", order: null,             get: function (r) { return tokens(r[FLD.heard]); } },
-    { key: "rich",      title: "リッチメニュー クリック",  order: null,             get: function (r) { return tokens(r[FLD.rich]); } },
-    { key: "sent",      title: "まちへの愛着（Q6・複数回答）", order: (CFG.sentimentOrder || null), get: function (r) { return tokens(r[FLD.sent]); } },
+    { key: "gender",    title: "性別",                       order: FD.ORDER.gender,    get: function (r) { return tokens(r[FLD.gender]); } },
+    { key: "age",       title: "年代",                       order: FD.ORDER.age,       get: function (r) { var v = FD.ageBand(r[FLD.birth]); return v ? [v] : []; } },
+    { key: "res",       title: "居住地（サマリ）",            order: FD.ORDER.res,       get: function (r) { var v = FD.resGroupOf(r); return v ? [v] : []; } },
+    { key: "resDetail", title: "居住地（詳細）",              order: FD.ORDER.resDetail, get: function (r) { var v = FD.resDetailOf(r); return v ? [v] : []; } },
+    { key: "walk",      title: "徒歩圏・徒歩圏外",            order: FD.ORDER.walk,      get: function (r) { var v = FD.walkBand(r); return v ? [v] : []; }, solo: true },
+    { key: "wrk",       title: "勤務地（サマリ）",            order: FD.ORDER.wrk,       get: function (r) { var v = FD.wrkGroupOf(r); return v ? [v] : []; } },
+    { key: "wrkDetail", title: "勤務地（詳細）",              order: FD.ORDER.wrkDetail, get: function (r) { var v = FD.wrkDetailOf(r); return v ? [v] : []; } },
+    { key: "source",    title: "流入経路",                   order: null,               get: function (r) { return tokens(r[FLD.source]); } },
+    { key: "heard",     title: "認知経路",                   order: null,               get: function (r) { return tokens(r[FLD.heard]); } },
+    { key: "rich",      title: "リッチメニュークリック",       order: null,               get: function (r) { return tokens(r[FLD.rich]); } },
+    { key: "sent",      title: "まちへの愛着",                order: (CFG.sentimentOrder || null), get: function (r) { return tokens(r[FLD.sent]); } },
   ];
 
   /* ===================== 期間 ===================== */
@@ -279,8 +289,9 @@
 
       var id = "cmp_" + c.key;
       var h = Math.max(180, labels.length * 30 + 60);
+      /* solo 指定の項目は左列のみに単独表示（CSS 側で次項目を次行へ送る） */
       host.insertAdjacentHTML("beforeend",
-        '<div class="panel cmp-panel">' +
+        '<div class="panel cmp-panel' + (c.solo ? ' solo' : '') + '">' +
           '<div class="panel-head"><h3>' + c.title + '</h3>' +
           '<span class="sub">A ' + sumA + " / B " + sumB + (mode === "pct" ? "（構成比）" : "（件数）") + '</span></div>' +
           '<div class="cmp-box" style="height:' + h + 'px"><canvas id="' + id + '"></canvas></div>' +

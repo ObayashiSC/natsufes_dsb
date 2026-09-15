@@ -25,7 +25,7 @@
   align-items: stretch; margin: 4px 0 var(--gap);
 }
 .cmp-side { background: var(--panel); padding: 16px 18px; border-top: 3px solid var(--gray); }
-.cmp-side.side-a { border-top-color: var(--cmp-a); background: linear-gradient(0deg, var(--panel), var(--panel)); }
+.cmp-side.side-a { border-top-color: var(--cmp-a); }
 .cmp-side.side-b { border-top-color: var(--cmp-b); }
 
 .cmp-side-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
@@ -67,8 +67,32 @@
 .cmp-table th.cb, .cmp-table td.cb { text-align: right; color: var(--cmp-b); font-weight: 700; font-variant-numeric: tabular-nums; background: var(--cmp-b-soft); }
 .cmp-table tbody tr:last-child td { border-bottom: none; }
 
-/* ---- 比較グラフのグリッド ---- */
-.cmp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap); }
+/* =========================================================================
+ *  項目別 比較グリッド（指定キャプチャのレイアウト）
+ *  ------------------------------------------------------------------------
+ *    性別            ｜ 年代
+ *    居住地（サマリ） ｜ 居住地（詳細）
+ *    徒歩圏・徒歩圏外 ｜ （空き）        ← .solo
+ *    勤務地（サマリ） ｜ 勤務地（詳細）
+ *    流入経路        ｜ 認知経路
+ *    リッチメニュー   ｜ まちへの愛着
+ *
+ *  ・2列固定（grid-auto-flow: row dense を使わず、記述順どおりに配置）
+ *  ・.solo は左列のみに置き、直後のパネルを強制的に次行の左列へ送る
+ *  ・各行はカードの高さを揃える（align-items: stretch）
+ * ======================================================================= */
+.cmp-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap);
+  align-items: stretch;
+}
+.cmp-grid > .cmp-panel { display: flex; flex-direction: column; min-width: 0; }
+.cmp-grid > .cmp-panel .cmp-box { flex: 1 1 auto; }
+
+/* solo（単独表示）とその直後の折り返し */
+.cmp-grid > .cmp-panel.solo { grid-column: 1; }
+.cmp-grid > .cmp-panel.solo + .cmp-panel { grid-column: 1; }
 
 /* ---- レスポンシブ ---- */
 @media (max-width: 1080px) {
@@ -77,6 +101,9 @@
   .cmp-swap button { width: 100%; height: 34px; }
   .cmp-top { grid-template-columns: 1fr; }
   .cmp-grid { grid-template-columns: 1fr; }
+  /* 1列表示では solo の折り返し指定を無効化 */
+  .cmp-grid > .cmp-panel.solo,
+  .cmp-grid > .cmp-panel.solo + .cmp-panel { grid-column: auto; }
 }
 @media (max-width: 560px) {
   .cmp-dds { grid-template-columns: 1fr; }
