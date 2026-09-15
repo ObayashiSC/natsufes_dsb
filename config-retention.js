@@ -29,14 +29,24 @@ window.RETENTION_CONFIG = {
     MAIL: "gray",
   },
 
-  /* --- KPIタイル（1段 × 4指標）------------------------------------------
+  /* --- KPIタイル（チャネル段）--------------------------------------------
    *  リテンション数 / 遷移率 / 予約率 / 開封率
+   *  リテンション数 = MST_Retention の message_delivery_count（配信数）
    * -------------------------------------------------------------------- */
   kpis: [
-    { key: "base_count",       label: "リテンション数", caption: "母数（登録者ベース）" },
-    { key: "transition_rate",  label: "遷移率",        caption: "サイト流入 ÷ 母数",   pct: true },
-    { key: "reservation_rate", label: "予約率",        caption: "予約完了 ÷ 母数",     pct: true },
-    { key: "open_rate",        label: "開封率",        caption: "開封数 ÷ 送信数",     pct: true },
+    { key: "base_count",       label: "リテンション数", caption: "配信数（母数）" },
+    { key: "transition_rate",  label: "遷移率",        caption: "サイト流入 ÷ 配信数", pct: true },
+    { key: "reservation_rate", label: "予約率",        caption: "予約完了 ÷ 配信数",   pct: true },
+    { key: "open_rate",        label: "開封率",        caption: "開封数 ÷ 配信数",     pct: true },
+  ],
+
+  /* --- KPIタイル（全体エリア）--------------------------------------------
+   *  開封率は LINE でしか取得できず、全チャネル合算では意味を持たないため除外。
+   * -------------------------------------------------------------------- */
+  kpisOverall: [
+    { key: "base_count",       label: "リテンション数", caption: "配信数の合計（母数）" },
+    { key: "transition_rate",  label: "遷移率",        caption: "サイト流入 ÷ 配信数", pct: true },
+    { key: "reservation_rate", label: "予約率",        caption: "予約完了 ÷ 配信数",   pct: true },
   ],
 
   /* --- ブロック増加数タイル -----------------------------------------------

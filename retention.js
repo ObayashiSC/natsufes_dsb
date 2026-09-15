@@ -80,8 +80,9 @@
 
   /* ========================= KPI ========================= */
   /* ShopDrop 版 renderKPIs と同じ組み立て（.kpi / .k-label / .k-val / .k-cap）*/
-  function kpiTiles(metrics, accent) {
-    return (CFG.kpis || []).map(function (k) {
+  /* defs 省略時は CFG.kpis（チャネル段用）を使う */
+  function kpiTiles(metrics, accent, defs) {
+    return (defs || CFG.kpis || []).map(function (k) {
       var v = metrics[k.key];
       var na = (v === null || v === undefined);
       var cls = "kpi " + (accent || "") + (na ? " na" : "");
@@ -232,7 +233,6 @@
           '<td class="ch-' + acc + '">' + ch + '</td>' +
           '<td>' + mn + '</td>' +
           '<td>' + fmtN(m.base_count) + '</td>' +
-          '<td>' + fmtN(m.message_delivery_count) + '</td>' +
           '<td' + (m.open_count === null ? ' class="na"' : '') + '>' +
             (m.open_count === null ? CFG.emptyLabel : fmtN(m.open_count)) + '</td>' +
           '<td' + (m.open_rate === null ? ' class="na"' : '') + '>' + fmtP(m.open_rate) + '</td>' +
@@ -246,7 +246,7 @@
 
     setHTML("#retTable",
       '<table class="ret-table"><thead><tr>' +
-        '<th>channel</th><th>method</th><th>リテンション数</th><th>送信数</th>' +
+        '<th>channel</th><th>method</th><th>リテンション数<br><span style="font-weight:400">（配信数）</span></th>' +
         '<th>開封数</th><th>開封率</th><th>遷移数</th><th>遷移率</th>' +
         '<th>予約数</th><th>予約率</th>' +
       '</tr></thead><tbody>' + rows + '</tbody></table>');
@@ -261,8 +261,8 @@
     var channels = sortChannels(Object.keys(d.channels));
 
     /* --- 1) 全体 KPI --- */
-    setHTML("#kpisAll", kpiTiles(d.overall, "gray"));
-    setText("#kpiMeta", "全体 " + fmtN(d.overall.base_count) + "名 / " + channels.length + " チャネル");
+    setHTML("#kpisAll", kpiTiles(d.overall, "gray", CFG.kpisOverall));
+    setText("#kpiMeta", "配信数合計 " + fmtN(d.overall.base_count) + " / " + channels.length + " チャネル");
 
     /* --- 2) チャネルごとの KPI + method 別ファネル --- */
     var host = $("#retChannels");
@@ -274,7 +274,7 @@
       var methods = Object.keys(cd.methods);
 
       host.insertAdjacentHTML("beforeend",
-        tierLabel(ch + " 全体", acc, fmtN(cd.total.base_count) + "名"));
+        tierLabel(ch + " 全体", acc, "配信数 " + fmtN(cd.total.base_count)));
       /* LINE 段だけブロック増加数を加えて 5 タイルにする */
       var isBlockCh = (ch === (CFG.blockKpiChannel || "LINE"));
       var tiles = kpiTiles(cd.total, acc) + (isBlockCh ? blockTile(acc) : "");
