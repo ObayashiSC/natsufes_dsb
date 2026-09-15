@@ -25,6 +25,7 @@
   };
 
   var DATA = null;
+  var loadedFrom = null;   /* 実際に読み込めたJSONのパス */
   var charts = {};
   var currentLabel = null;
 
@@ -53,6 +54,11 @@
   };
   var fmtP = function (v) {
     return (v === null || v === undefined) ? "–" : (v * 100).toFixed(1) + " %";
+  };
+  /* "20260911" → "9/11"（KPIキャプションの可読性向上）*/
+  var fmtDate = function (s) {
+    var m = /^(\d{4})(\d{2})(\d{2})$/.exec(String(s || ""));
+    return m ? Number(m[2]) + "/" + Number(m[3]) : (s || "");
   };
 
   /* チャネル → アクセント名（acq / attr / gray）*/
@@ -87,6 +93,33 @@
           '<div class="k-cap">' + k.caption + '</div>' +
         '</div>';
     }).join("");
+  }
+
+  /* ブロック増加数タイル（LINEのみ）。block_trend は label ではなく
+     LINE友だち一覧の記録期間に紐づく指標のため、値は全 label 共通。*/
+  function blockTile(accent) {
+    var bt = DATA && DATA.block_trend;
+    var cfg = CFG.blockKpi || {};
+    if (!bt || bt.block_increase === null || bt.block_increase === undefined) {
+      return '<div class="kpi ' + accent + ' na">' +
+        '<div class="k-label">' + (cfg.label || "ブロック増加数") + '</div>' +
+        '<div class="k-val">' + CFG.emptyLabel + '</div>' +
+        '<div class="k-cap">' + (cfg.caption || "") + '</div></div>';
+    }
+    var inc = bt.block_increase;
+    var sign = inc > 0 ? "+" : "";
+    /* 増加は好ましくないため注意色(attr)ではなくwarnクラスで表現 */
+    var rate = (bt.block_rate_increase === null || bt.block_rate_increase === undefined)
+      ? "" : "（率 " + (bt.block_rate_increase > 0 ? "+" : "") +
+             (bt.block_rate_increase * 100).toFixed(1) + "pt）";
+    var span = (bt.first && bt.latest)
+      ? fmtDate(bt.first.record_date) + " → " + fmtDate(bt.latest.record_date) : "";
+    return '' +
+      '<div class="kpi ' + accent + (inc > 0 ? " blk-up" : "") + '">' +
+        '<div class="k-label">' + (cfg.label || "ブロック増加数") + '</div>' +
+        '<div class="k-val">' + sign + fmtN(inc) + '</div>' +
+        '<div class="k-cap">' + span + " " + rate + '</div>' +
+      '</div>';
   }
 
   function tierLabel(name, accent, countText) {
@@ -242,8 +275,11 @@
 
       host.insertAdjacentHTML("beforeend",
         tierLabel(ch + " 全体", acc, fmtN(cd.total.base_count) + "名"));
+      /* LINE 段だけブロック増加数を加えて 5 タイルにする */
+      var isBlockCh = (ch === (CFG.blockKpiChannel || "LINE"));
+      var tiles = kpiTiles(cd.total, acc) + (isBlockCh ? blockTile(acc) : "");
       host.insertAdjacentHTML("beforeend",
-        '<section class="kpis">' + kpiTiles(cd.total, acc) + '</section>');
+        '<section class="kpis' + (isBlockCh ? " kpis-5" : "") + '">' + tiles + '</section>');
 
       var cls = acc === "acq" ? "t-acq" : acc === "attr" ? "t-attr" : "t-all";
       var panels = methods.map(function (mn, i) {
@@ -337,15 +373,24 @@
       return;
     }
     try {
-      var res = await fetch(CFG.DATA_SOURCE + "?_=" + Date.now());
-      if (!res.ok) throw new Error("HTTP " + res.status);
+      /* DATA_SOURCE を第一候補とし、旧仕様の日付付きファイルも順に試す。
+         （config-retention.js がブラウザキャッシュに古いまま残っていても復旧できるようにする）*/
+      var candidates = [CFG.DATA_SOURCE, "retention_result.json"].filter(Boolean);
+      var res = null, tried = [];
+      for (var i = 0; i < candidates.length; i++) {
+        if (tried.indexOf(candidates[i]) >= 0) continue;
+        tried.push(candidates[i]);
+        var r = await fetch(candidates[i] + "?_=" + Date.now());
+        if (r.ok) { res = r; loadedFrom = candidates[i]; break; }
+      }
+      if (!res) throw new Error("HTTP 404 / 試行したパス: " + tried.join(" , "));
       DATA = await res.json();
 
       if (!DATA.summary || !DATA.summary.labels || !DATA.summary.labels.length) {
         throw new Error("summary が見つかりません。retention_report.py を更新して再生成してください");
       }
 
-      setText("#srcName", CFG.DATA_SOURCE);
+      setText("#srcName", loadedFrom || CFG.DATA_SOURCE);
       setText("#genAt", (DATA.run_date || "–"));
       setText("#recCount", DATA.summary.labels.length.toLocaleString());
       setText("#gaSrc", DATA.ga_source_file || "–");
@@ -355,8 +400,19 @@
     } catch (e) {
       console.error(e);
       /* fetch 失敗（file:// 直開き等）と描画エラーを切り分けて案内（dashboard-core.js と同方針）*/
+      var is404 = /404/.test(e.message || "");
       var isFetch = (e instanceof TypeError) || /fetch|HTTP|Failed/.test(e.message || "");
-      var msg = isFetch
+      var msg = is404
+        /* 404 = サーバは応答している＝file://問題ではない。パス不一致が原因。*/
+        ? 'JSON が見つかりません（' + e.message + '）。<br>' +
+          '<span style="color:var(--dim)">' +
+          'HTML/CSS/JS は読めているので、サーバ自体は動いています。' +
+          '<b>JSON のファイル名がこの場所と一致していない</b>ことが原因です。<br>' +
+          '① リポジトリ直下の JSON 名が <code>' + CFG.DATA_SOURCE + '</code> と完全一致しているか（大文字小文字も区別されます）<br>' +
+          '② <code>config-retention.js</code> が古いままキャッシュされていないか → ' +
+          '<b>Ctrl+Shift+R</b> でスーパーリロード<br>' +
+          '現在の設定値: <code>' + CFG.DATA_SOURCE + '</code></span>'
+        : isFetch
         ? 'データの取得に失敗しました（' + e.message + '）。<br>' +
           '<span style="color:var(--dim)">HTML を直接ダブルクリックで開くとブラウザ制約で JSON を読めません。' +
           'フォルダ内で <code>python -m http.server</code> を起動し <b>http://localhost:8000/retention.html</b> ' +

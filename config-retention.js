@@ -7,10 +7,10 @@
  * ========================================================================= */
 window.RETENTION_CONFIG = {
   /* --- データソース (日々差し替えるJSON) ---------------------------------
-   *  retention_report.py が output/ に吐く retention_result_YYYYMMDD.json。
-   *  ファイル名は日付を含むため、候補を上から順に試す。
+   *  retention_report.py が output/ に吐く固定名ファイル。
+   *  日付は JSON 内の run_date を参照するため、ファイル名の変更は不要。
    * -------------------------------------------------------------------- */
-  DATA_SOURCE: "retention_result_20260914.json",
+  DATA_SOURCE: "retention_result.json",
 
   /* --- ブランド ---------------------------------------------------------- */
   brand: {
@@ -38,6 +38,13 @@ window.RETENTION_CONFIG = {
     { key: "reservation_rate", label: "予約率",        caption: "予約完了 ÷ 母数",     pct: true },
     { key: "open_rate",        label: "開封率",        caption: "開封数 ÷ 送信数",     pct: true },
   ],
+
+  /* --- ブロック増加数タイル -----------------------------------------------
+   *  JSON の block_trend（LINE友だち一覧の期間差分）から算出するため、
+   *  LINE チャネルの段にのみ追加表示する。blockKpiChannel で対象を指定。
+   * -------------------------------------------------------------------- */
+  blockKpi: { label: "ブロック増加数", caption: "期間内のブロック増（LINEのみ）" },
+  blockKpiChannel: "LINE",
 
   /* --- ファネルの段（open_count が無いチャネルは開封段を自動スキップ）--- */
   funnelSteps: [

@@ -30,6 +30,15 @@
 .kpi.acq  { border-top: 3px solid var(--acq);  }
 .kpi.acq  .k-val { color: var(--acq);  }
 
+/* ネガティブ指標の色（既存パレットに無いため、彩度を抑えた赤をここで定義）*/
+:root { --neg: #b4432f; }
+
+/* ---- LINE段は「ブロック増加数」を加えた5タイル構成 ---- */
+.kpis.kpis-5 { grid-template-columns: repeat(5, 1fr); }
+
+/* ブロック増加（＝マイナス指標）は数値を警告色に。上辺ラインは段の色を維持 */
+.kpi.blk-up .k-val { color: var(--neg); }
+
 /* 開封率が取得できないチャネルのタイルは淡色で「取得不可」を明示 */
 .kpi.na .k-val { color: var(--dim); font-size: 22px; }
 .kpi.na .k-cap { color: var(--dim); }
@@ -81,6 +90,8 @@
 
 /* ---- レスポンシブ（既存ブレークポイントに合わせる）---- */
 @media (max-width: 1080px) {
+  /* styles.css の .kpis は2列になるため、5タイルも同じ折り返しに揃える */
+  .kpis.kpis-5 { grid-template-columns: repeat(2, 1fr); }
   .ret-grid { grid-template-columns: 1fr; }
   .ret-grid > .panel.solo { grid-column: auto; }
   .ret-box { min-height: 250px; }
