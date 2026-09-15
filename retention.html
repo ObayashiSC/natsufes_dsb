@@ -19,8 +19,8 @@
   <!-- 追加: サイドバーのフィルター用スタイル（LINE版と共通） -->
   <link rel="stylesheet" href="filters.css">
   <!-- 追加: リテンション用スタイル -->
-  <link rel="stylesheet" href="retention.css?v=2">
-  <script src="config-retention.js?v=2"></script>
+  <link rel="stylesheet" href="retention.css?v=4">
+  <script src="config-retention.js?v=4"></script>
 </head>
 <body class="page-fade">
   <div class="app">
@@ -99,13 +99,11 @@
           </div>
           <span class="meta" id="kpiMeta">–</span>
         </div>
-        <section class="kpis" id="kpisAll"></section>
+        <section class="kpis kpis-3" id="kpisAll"></section>
 
         <!-- 注釈: 開封数が取得できないチャネルについて -->
         <p class="ret-note">
-          ※ DROP リテンションメールは仕様上 <b>開封数が取得できない</b>ため、開封率タイルとファネルの開封段は表示されません。<br>
-          ※ LINE のリテンション数は友だち総数（line_retention.csv の最古レコード）を母数としています。A/B の送信数とは一致しません。<br>
-          ※ <b>ブロック増加数</b>は line_retention.csv の記録期間（最古 → 最新）の差分です。LINE 友だち一覧に基づく指標のため <b>LINE 段にのみ表示</b>され、label を切り替えても値は変わりません。
+          ※ DROP リテンションメールは仕様上 <b>開封数が取得できない</b>ため、開封率タイルとファネルの開封段は表示されません。
         </p>
 
         <!-- ===== チャネル別（channel ごとに KPI + method 別ファネル） ===== -->
@@ -173,6 +171,6 @@
     })();
   </script>
 
-  <script src="retention.js?v=2"></script>
+  <script src="retention.js?v=4"></script>
 </body>
 </html>
