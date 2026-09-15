@@ -5,17 +5,15 @@
  *  グラフで比較する専用画面。
  *
  *  ・フィルター項目の定義は filter-defs.js（window.FilterDefs）を共用。
- *    → 通常画面と同じ項目（性別・年代・居住地・徒歩圏・勤務地・勤務地(詳細)）。
  *  ・データ取得は config.js の DATA_SOURCE を参照（dashboard-core.js は不使用）。
  *  ・表示は「件数」と「構成比(%)」をトグルで切替できる。
  *
- *  ★レイアウト（指定のキャプチャ準拠・2列固定）
- *      性別              ｜ 年代
- *      居住地（サマリ）   ｜ 居住地（詳細）
- *      徒歩圏・徒歩圏外   ｜ （空き）        ← solo: 左のみ
- *      勤務地（サマリ）   ｜ 勤務地（詳細）
- *      流入経路          ｜ 認知経路
- *      リッチメニュー     ｜ まちへの愛着
+ *  ★レイアウト（2列固定）
+ *      性別 ｜ 年代／居住地(サマリ) ｜ 居住地(詳細)／徒歩圏(単独)／
+ *      勤務地(サマリ) ｜ 勤務地(詳細)／流入経路 ｜ 認知経路／リッチメニュー ｜ まちへの愛着
+ *
+ *  ★A/Bフィルターバーは Excel の「ウィンドウ枠の固定」と同様、
+ *    スクロールしても画面上部に固定表示される（initSticky）。
  *
  *  依存: Chart.js / config.js / filter-defs.js
  * ======================================================================= */
@@ -48,17 +46,17 @@
    *  solo: true … その行は左列のみに表示し、次の項目は次行の左から始める
    * ------------------------------------------------------------ */
   var CHARTS = [
-    { key: "gender",    title: "性別",                       order: FD.ORDER.gender,    get: function (r) { return tokens(r[FLD.gender]); } },
-    { key: "age",       title: "年代",                       order: FD.ORDER.age,       get: function (r) { var v = FD.ageBand(r[FLD.birth]); return v ? [v] : []; } },
-    { key: "res",       title: "居住地（サマリ）",            order: FD.ORDER.res,       get: function (r) { var v = FD.resGroupOf(r); return v ? [v] : []; } },
-    { key: "resDetail", title: "居住地（詳細）",              order: FD.ORDER.resDetail, get: function (r) { var v = FD.resDetailOf(r); return v ? [v] : []; } },
-    { key: "walk",      title: "徒歩圏・徒歩圏外",            order: FD.ORDER.walk,      get: function (r) { var v = FD.walkBand(r); return v ? [v] : []; }, solo: true },
-    { key: "wrk",       title: "勤務地（サマリ）",            order: FD.ORDER.wrk,       get: function (r) { var v = FD.wrkGroupOf(r); return v ? [v] : []; } },
-    { key: "wrkDetail", title: "勤務地（詳細）",              order: FD.ORDER.wrkDetail, get: function (r) { var v = FD.wrkDetailOf(r); return v ? [v] : []; } },
-    { key: "source",    title: "流入経路",                   order: null,               get: function (r) { return tokens(r[FLD.source]); } },
-    { key: "heard",     title: "認知経路",                   order: null,               get: function (r) { return tokens(r[FLD.heard]); } },
-    { key: "rich",      title: "リッチメニュークリック",       order: null,               get: function (r) { return tokens(r[FLD.rich]); } },
-    { key: "sent",      title: "まちへの愛着",                order: (CFG.sentimentOrder || null), get: function (r) { return tokens(r[FLD.sent]); } },
+    { key: "gender",    title: "性別",                 order: FD.ORDER.gender,    get: function (r) { return tokens(r[FLD.gender]); } },
+    { key: "age",       title: "年代",                 order: FD.ORDER.age,       get: function (r) { var v = FD.ageBand(r[FLD.birth]); return v ? [v] : []; } },
+    { key: "res",       title: "居住地（サマリ）",      order: FD.ORDER.res,       get: function (r) { var v = FD.resGroupOf(r); return v ? [v] : []; } },
+    { key: "resDetail", title: "居住地（詳細）",        order: FD.ORDER.resDetail, get: function (r) { var v = FD.resDetailOf(r); return v ? [v] : []; } },
+    { key: "walk",      title: "徒歩圏・徒歩圏外",      order: FD.ORDER.walk,      get: function (r) { var v = FD.walkBand(r); return v ? [v] : []; }, solo: true },
+    { key: "wrk",       title: "勤務地（サマリ）",      order: FD.ORDER.wrk,       get: function (r) { var v = FD.wrkGroupOf(r); return v ? [v] : []; } },
+    { key: "wrkDetail", title: "勤務地（詳細）",        order: FD.ORDER.wrkDetail, get: function (r) { var v = FD.wrkDetailOf(r); return v ? [v] : []; } },
+    { key: "source",    title: "流入経路",             order: null,               get: function (r) { return tokens(r[FLD.source]); } },
+    { key: "heard",     title: "認知経路",             order: null,               get: function (r) { return tokens(r[FLD.heard]); } },
+    { key: "rich",      title: "リッチメニュークリック", order: null,               get: function (r) { return tokens(r[FLD.rich]); } },
+    { key: "sent",      title: "まちへの愛着",          order: (CFG.sentimentOrder || null), get: function (r) { return tokens(r[FLD.sent]); } },
   ];
 
   /* ===================== 期間 ===================== */
@@ -76,6 +74,86 @@
   }
   function baseRows() { return RAW.filter(inPeriod); }
   function rowsOf(side) { return FD.filter(ST[side], baseRows()); }
+
+  /* =========================================================================
+   *  ウィンドウ枠の固定（sticky）
+   *  ------------------------------------------------------------------------
+   *  ・position: sticky は「スクロールする祖先」が overflow:hidden だと効かない。
+   *    このダッシュボードは .main（または body）がスクロール領域のため、
+   *    途中の祖先に overflow:hidden があれば visible に緩和して sticky を有効化する。
+   *  ・センチネル要素が画面外へ出たタイミングで .stuck を付け、影＋コンパクト表示。
+   *  ・「固定」ボタンでON/OFF、「隠す」ボタンで追従中の折りたたみが可能。
+   * ======================================================================= */
+  function initSticky() {
+    var bar = $(".cmp-filters");
+    if (!bar) return;
+
+    /* --- 1) sticky を妨げる overflow:hidden を解除 --- */
+    var node = bar.parentElement;
+    while (node && node !== document.body) {
+      var st = getComputedStyle(node);
+      if (st.overflowY === "hidden" || st.overflow === "hidden") node.style.overflow = "visible";
+      if (st.overflowX === "hidden" && st.overflowY === "visible") node.style.overflowX = "clip";
+      node = node.parentElement;
+    }
+
+    /* --- 2) 操作バー（固定ON/OFF・折りたたみ）--- */
+    var pin = document.createElement("div");
+    pin.className = "cmp-pinbar";
+    pin.innerHTML =
+      '<span id="pinHint">スクロールしてもフィルターは画面上部に固定されます</span>' +
+      '<span class="spacer"></span>' +
+      '<button type="button" id="btnCollapse">隠す</button>' +
+      '<button type="button" id="btnPin" class="on">📌 固定中</button>';
+    bar.appendChild(pin);
+
+    var btnPin = pin.querySelector("#btnPin");
+    var btnCol = pin.querySelector("#btnCollapse");
+
+    btnPin.onclick = function () {
+      var off = bar.classList.toggle("unpinned");
+      btnPin.classList.toggle("on", !off);
+      btnPin.textContent = off ? "固定OFF" : "📌 固定中";
+      $("#pinHint").textContent = off
+        ? "固定を解除しました（通常スクロール）"
+        : "スクロールしてもフィルターは画面上部に固定されます";
+      if (off) bar.classList.remove("stuck", "collapsed");
+      try { localStorage.setItem("cmp:pin", off ? "0" : "1"); } catch (e) {}
+    };
+
+    btnCol.onclick = function () {
+      var col = bar.classList.toggle("collapsed");
+      btnCol.textContent = col ? "表示" : "隠す";
+    };
+
+    /* 前回の固定ON/OFF設定を復元 */
+    try {
+      if (localStorage.getItem("cmp:pin") === "0") btnPin.click();
+    } catch (e) {}
+
+    /* --- 3) 追従開始の検知（センチネル）--- */
+    var sent = document.createElement("div");
+    sent.className = "cmp-sticky-sentinel";
+    bar.parentNode.insertBefore(sent, bar);
+
+    if ("IntersectionObserver" in window) {
+      new IntersectionObserver(function (es) {
+        es.forEach(function (e) {
+          if (bar.classList.contains("unpinned")) return;
+          bar.classList.toggle("stuck", !e.isIntersecting);
+        });
+      }, { threshold: [1] }).observe(sent);
+    } else {
+      /* フォールバック（IE系など）: スクロール量で判定 */
+      var base = sent.offsetTop;
+      var sc = bar.closest(".main") || window;
+      (sc.addEventListener ? sc : window).addEventListener("scroll", function () {
+        if (bar.classList.contains("unpinned")) return;
+        var y = (sc === window) ? window.pageYOffset : sc.scrollTop;
+        bar.classList.toggle("stuck", y > base);
+      });
+    }
+  }
 
   /* ===================== フィルターUI（A / B）===================== */
   function buildSide(side) {
@@ -377,6 +455,7 @@
       initPeriod();
       buildSide("A"); buildSide("B");
       bindUI();
+      initSticky();          /* ← ウィンドウ枠の固定 */
       render();
     } catch (e) {
       console.error(e);
