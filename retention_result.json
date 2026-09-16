@@ -1,31 +1,21 @@
 {
-  "generated_at": "2026-09-15 14:03:50",
+  "generated_at": "2026-09-16 13:48:50",
   "ga_source_file": "table_prop_ga_minmachi_shop.csv",
-  "run_date": "20260915",
+  "run_date": "20260916",
   "base_counts": {
     "n1_line": {
       "value": 833,
       "source": "line_retention.csv (record_date=20260914)"
-    },
-    "n2_Retention_A_DROP": {
-      "value": null,
-      "source": null,
-      "note": null
-    },
-    "n2_Retention_B_DROP": {
-      "value": null,
-      "source": null,
-      "note": null
     }
   },
   "line_snapshot": {
-    "record_date": "20260915",
+    "record_date": "20260916",
     "source_file": "LINE_user.csv",
-    "friend_count": 834,
-    "block_count": 82,
+    "friend_count": 839,
+    "block_count": 87,
     "active_count": 752,
-    "block_rate": 0.0983,
-    "recorded_at": "2026-09-15 14:03:50"
+    "block_rate": 0.1037,
+    "recorded_at": "2026-09-16 13:48:49"
   },
   "funnels": [
     {
@@ -38,22 +28,30 @@
       "utm_id": "line_cruiseA",
       "service_id": null,
       "service_event_id": "E000010697,E000010698",
-      "open_count": 240,
+      "open_count": 252,
       "message_delivery_count": 403,
-      "retention_file": null,
-      "count_file": null,
-      "transition_users": 48,
-      "transition_events": 169,
+      "transition_users": 49,
+      "transition_events": 172,
       "reservation_match_key": "ServiceEventId=E000010697,E000010698",
       "reservation_users": 0,
       "base_type": "message_delivery_count",
       "base_count": 403,
       "base_source": "LINE_LINE_A",
-      "transition_rate": 0.1191,
+      "transition_rate": 0.1216,
       "reservation_rate": 0.0,
-      "open_rate": 0.5955,
+      "open_rate": 0.6253,
       "open_rate_base": "message_delivery_count",
-      "transition_rate_per_open": 0.2
+      "transition_rate_per_open": 0.1944,
+      "block_since_send": {
+        "send_date": "20260914",
+        "baseline_date": "20260914",
+        "baseline_block_count": 50,
+        "latest_date": "20260916",
+        "latest_block_count": 87,
+        "block_increase": 37,
+        "block_rate_increase": 0.0437,
+        "elapsed_days": 2
+      }
     },
     {
       "date": "20260914",
@@ -65,22 +63,30 @@
       "utm_id": "line_cruiseB",
       "service_id": null,
       "service_event_id": "E000010697,E000010698",
-      "open_count": 254,
+      "open_count": 263,
       "message_delivery_count": 379,
-      "retention_file": null,
-      "count_file": null,
-      "transition_users": 25,
-      "transition_events": 82,
+      "transition_users": 29,
+      "transition_events": 98,
       "reservation_match_key": "ServiceEventId=E000010697,E000010698",
       "reservation_users": 0,
       "base_type": "message_delivery_count",
       "base_count": 379,
       "base_source": "LINE_LINE_B",
-      "transition_rate": 0.066,
+      "transition_rate": 0.0765,
       "reservation_rate": 0.0,
-      "open_rate": 0.6702,
+      "open_rate": 0.6939,
       "open_rate_base": "message_delivery_count",
-      "transition_rate_per_open": 0.0984
+      "transition_rate_per_open": 0.1103,
+      "block_since_send": {
+        "send_date": "20260914",
+        "baseline_date": "20260914",
+        "baseline_block_count": 50,
+        "latest_date": "20260916",
+        "latest_block_count": 87,
+        "block_increase": 37,
+        "block_rate_increase": 0.0437,
+        "elapsed_days": 2
+      }
     },
     {
       "date": "20260914",
@@ -94,19 +100,27 @@
       "service_event_id": "E000010697,E000010698",
       "open_count": null,
       "message_delivery_count": 409,
-      "retention_file": null,
-      "count_file": null,
-      "transition_users": 14,
-      "transition_events": 45,
+      "transition_users": 21,
+      "transition_events": 71,
       "reservation_match_key": "ServiceEventId=E000010697,E000010698",
       "reservation_users": 0,
       "base_type": "message_delivery_count",
       "base_count": 409,
       "base_source": "DROP_Retention_A",
-      "transition_rate": 0.0342,
+      "transition_rate": 0.0513,
       "reservation_rate": 0.0,
       "open_rate": null,
-      "open_rate_base": null
+      "open_rate_base": null,
+      "block_since_send": {
+        "send_date": "20260914",
+        "baseline_date": "20260914",
+        "baseline_block_count": 50,
+        "latest_date": "20260916",
+        "latest_block_count": 87,
+        "block_increase": 37,
+        "block_rate_increase": 0.0437,
+        "elapsed_days": 2
+      }
     },
     {
       "date": "20260914",
@@ -120,19 +134,27 @@
       "service_event_id": "E000010697,E000010698",
       "open_count": null,
       "message_delivery_count": 409,
-      "retention_file": null,
-      "count_file": null,
-      "transition_users": 9,
-      "transition_events": 25,
+      "transition_users": 13,
+      "transition_events": 35,
       "reservation_match_key": "ServiceEventId=E000010697,E000010698",
       "reservation_users": 0,
       "base_type": "message_delivery_count",
       "base_count": 409,
       "base_source": "DROP_Retention_B",
-      "transition_rate": 0.022,
+      "transition_rate": 0.0318,
       "reservation_rate": 0.0,
       "open_rate": null,
-      "open_rate_base": null
+      "open_rate_base": null,
+      "block_since_send": {
+        "send_date": "20260914",
+        "baseline_date": "20260914",
+        "baseline_block_count": 50,
+        "latest_date": "20260916",
+        "latest_block_count": 87,
+        "block_increase": 37,
+        "block_rate_increase": 0.0437,
+        "elapsed_days": 2
+      }
     }
   ],
   "summary": {
@@ -144,11 +166,11 @@
         "overall": {
           "base_count": 1600,
           "message_delivery_count": 1600,
-          "open_count": 494,
-          "transition_users": 96,
+          "open_count": 515,
+          "transition_users": 112,
           "reservation_users": 0,
-          "open_rate": 0.6317,
-          "transition_rate": 0.06,
+          "open_rate": 0.6586,
+          "transition_rate": 0.07,
           "reservation_rate": 0.0
         },
         "channels": {
@@ -157,10 +179,10 @@
               "base_count": 818,
               "message_delivery_count": 818,
               "open_count": null,
-              "transition_users": 23,
+              "transition_users": 34,
               "reservation_users": 0,
               "open_rate": null,
-              "transition_rate": 0.0281,
+              "transition_rate": 0.0416,
               "reservation_rate": 0.0
             },
             "methods": {
@@ -168,20 +190,20 @@
                 "base_count": 409,
                 "message_delivery_count": 409,
                 "open_count": null,
-                "transition_users": 14,
+                "transition_users": 21,
                 "reservation_users": 0,
                 "open_rate": null,
-                "transition_rate": 0.0342,
+                "transition_rate": 0.0513,
                 "reservation_rate": 0.0
               },
               "Retention_B": {
                 "base_count": 409,
                 "message_delivery_count": 409,
                 "open_count": null,
-                "transition_users": 9,
+                "transition_users": 13,
                 "reservation_users": 0,
                 "open_rate": null,
-                "transition_rate": 0.022,
+                "transition_rate": 0.0318,
                 "reservation_rate": 0.0
               }
             }
@@ -190,32 +212,32 @@
             "total": {
               "base_count": 782,
               "message_delivery_count": 782,
-              "open_count": 494,
-              "transition_users": 73,
+              "open_count": 515,
+              "transition_users": 78,
               "reservation_users": 0,
-              "open_rate": 0.6317,
-              "transition_rate": 0.0934,
+              "open_rate": 0.6586,
+              "transition_rate": 0.0997,
               "reservation_rate": 0.0
             },
             "methods": {
               "LINE_A": {
                 "base_count": 403,
                 "message_delivery_count": 403,
-                "open_count": 240,
-                "transition_users": 48,
+                "open_count": 252,
+                "transition_users": 49,
                 "reservation_users": 0,
-                "open_rate": 0.5955,
-                "transition_rate": 0.1191,
+                "open_rate": 0.6253,
+                "transition_rate": 0.1216,
                 "reservation_rate": 0.0
               },
               "LINE_B": {
                 "base_count": 379,
                 "message_delivery_count": 379,
-                "open_count": 254,
-                "transition_users": 25,
+                "open_count": 263,
+                "transition_users": 29,
                 "reservation_users": 0,
-                "open_rate": 0.6702,
-                "transition_rate": 0.066,
+                "open_rate": 0.6939,
+                "transition_rate": 0.0765,
                 "reservation_rate": 0.0
               }
             }
@@ -232,13 +254,13 @@
       "block_rate": 0.06
     },
     "latest": {
-      "record_date": "20260915",
-      "friend_count": 834,
-      "block_count": 82,
-      "block_rate": 0.0983
+      "record_date": "20260916",
+      "friend_count": 839,
+      "block_count": 87,
+      "block_rate": 0.1037
     },
-    "block_increase": 32,
-    "block_rate_increase": 0.0383,
+    "block_increase": 37,
+    "block_rate_increase": 0.0437,
     "history": [
       {
         "record_date": "20260914",
@@ -256,8 +278,50 @@
         "block_count": 82,
         "active_count": 752,
         "block_rate": 0.0983,
-        "recorded_at": "2026-09-15 14:03:50"
+        "recorded_at": "2026/9/15 14:03"
+      },
+      {
+        "record_date": "20260916",
+        "source_file": "LINE_user.csv",
+        "friend_count": 839,
+        "block_count": 87,
+        "active_count": 752,
+        "block_rate": 0.1037,
+        "recorded_at": "2026-09-16 13:48:49"
       }
-    ]
+    ],
+    "by_send_date": {
+      "20260914": {
+        "send_date": "20260914",
+        "baseline": {
+          "record_date": "20260914",
+          "friend_count": 833,
+          "block_count": 50,
+          "block_rate": 0.06
+        },
+        "baseline_kind": "on_or_before",
+        "latest": {
+          "record_date": "20260916",
+          "friend_count": 839,
+          "block_count": 87,
+          "block_rate": 0.1037
+        },
+        "elapsed_days": 2,
+        "block_increase": 37,
+        "friend_increase": 6,
+        "labels": [
+          "日本の夏フェス_20260914"
+        ],
+        "methods": [
+          "LINE_A",
+          "LINE_B",
+          "Retention_A",
+          "Retention_B"
+        ],
+        "block_rate_increase": 0.0437,
+        "message_delivery_count": 1600,
+        "block_increase_rate": 0.0231
+      }
+    }
   }
 }
