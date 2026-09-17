@@ -3470,5 +3470,19 @@
     "area_name": null,
     "drop_account_id": "d7343a88-7071-70a7-43b7-8b516171a1e4",
     "shop_user_id": null
+  },
+  {
+    "user_id": "0774da28-1051-703b-79b3-22872e097572",
+    "display_name": "Aniggia21",
+    "registered_at": "2026-09-16 17:42:08",
+    "deleted": 0,
+    "Q1_単一選択": "男性",
+    "Q3_単一選択": null,
+    "source": "shinagawa-natsufes-2026",
+    "age_group": "40代",
+    "enterprise_name": null,
+    "area_name": null,
+    "drop_account_id": "0774da28-1051-703b-79b3-22872e097572",
+    "shop_user_id": null
   }
 ]
