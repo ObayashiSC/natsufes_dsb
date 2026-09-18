@@ -3484,5 +3484,19 @@
     "area_name": null,
     "drop_account_id": "0774da28-1051-703b-79b3-22872e097572",
     "shop_user_id": null
+  },
+  {
+    "user_id": "67748a28-9081-703b-c9e9-a461f71d024a",
+    "display_name": "シュウ",
+    "registered_at": "2026-09-17 17:54:59",
+    "deleted": 0,
+    "Q1_単一選択": "男性",
+    "Q3_単一選択": null,
+    "source": "shinagawa-natsufes-2026",
+    "age_group": "20代",
+    "enterprise_name": null,
+    "area_name": null,
+    "drop_account_id": "67748a28-9081-703b-c9e9-a461f71d024a",
+    "shop_user_id": null
   }
 ]
